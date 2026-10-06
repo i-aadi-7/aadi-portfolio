@@ -129,7 +129,7 @@ function PortfolioContent() {
       <HeroSection onContactClick={handleOpenContact} />
 
       {/* 2. MARQUEE SECTION */}
-      <MarqueeSection />
+      <MarqueeSection onContactClick={handleOpenContact} />
 
       {/* 3. ABOUT SECTION */}
       <AboutSection onContactClick={handleOpenContact} />
