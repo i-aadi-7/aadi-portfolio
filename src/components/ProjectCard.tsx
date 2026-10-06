@@ -1,56 +1,43 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { LiveProjectButton } from './LiveProjectButton';
+import { LayoutDashboard, Users, GitBranch, ArrowUpRight, ShieldCheck, Sparkles, BarChart3, Clock, Zap } from 'lucide-react';
 
 export interface ProjectData {
   number: string;
   name: string;
   category: string;
-  col1Img1: string;
-  col1Img2: string;
-  col2Img: string;
+  label?: string;
+  tagline?: string;
+  description?: string;
+  tags?: string[];
+  status?: string;
+  type?: string;
+  focus?: string;
   liveUrl?: string;
 }
 
 interface ProjectCardProps {
   project: ProjectData;
-  index: number;
-  totalCards: number;
   onLiveProjectClick: (project: ProjectData) => void;
 }
 
 export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
-  index,
-  totalCards,
   onLiveProjectClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
 
-  // Card stacking scale calculation (when sticky)
-  const targetScale = 1 - (totalCards - 1 - index) * 0.03;
-
-  const { scrollYProgress: stackProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end start'],
-  });
-
-  const scale = useTransform(stackProgress, [0, 1], [1, targetScale]);
-
-  // Multi-plane image parallax tracking viewport entry and traversal
-  const { scrollYProgress: parallaxProgress } = useScroll({
+  // Parallax subtle scale & y-shift on scroll
+  const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start end', 'end start'],
   });
 
-  // Different directional offsets create rich multi-plane optical depth
-  const yParallax1 = useTransform(parallaxProgress, [0, 1], [-24, 24]);
-  const yParallax2 = useTransform(parallaxProgress, [0, 1], [28, -28]);
-  const yParallaxHero = useTransform(parallaxProgress, [0, 1], [-42, 42]);
-  const scaleHero = useTransform(parallaxProgress, [0, 0.5, 1], [1.16, 1.08, 1.16]);
+  const cardScale = useTransform(scrollYProgress, [0, 0.4, 0.8, 1], [0.97, 1, 1, 0.98]);
+  const yParallaxDetail = useTransform(scrollYProgress, [0, 1], [15, -15]);
 
-  // Native IntersectionObserver for subtle slide-up & fade-in reveal
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -76,117 +63,269 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   return (
     <div
       ref={containerRef}
-      className="h-[85vh] sm:h-[90vh] flex items-start justify-center sticky top-24 md:top-32"
-      style={{
-        top: `calc(clamp(5.5rem, 10vh, 8.5rem) + ${index * 28}px)`,
-      }}
+      className="w-full flex items-start justify-center pt-2 sm:pt-4"
     >
       <motion.div
-        initial={{ opacity: 0, y: 48, scale: 0.96 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={
           isInView
-            ? { opacity: 1, y: 0, scale: 1 }
-            : { opacity: 0, y: 48, scale: 0.96 }
+            ? { opacity: 1, y: 0 }
+            : { opacity: 0, y: 40 }
         }
         transition={{
           duration: 0.85,
-          delay: index * 0.06,
           ease: [0.21, 0.47, 0.32, 0.98],
         }}
         style={{
-          scale,
-          transformOrigin: 'top center',
+          scale: cardScale,
+          transformOrigin: 'center center',
         }}
-        className="w-full max-w-6xl mx-auto rounded-[40px] sm:rounded-[50px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-4 sm:p-6 md:p-8 flex flex-col justify-between shadow-[0_25px_60px_rgba(0,0,0,0.9)] will-change-transform"
+        className="w-full max-w-6xl mx-auto rounded-[36px] sm:rounded-[48px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-5 sm:p-7 md:p-10 flex flex-col justify-between shadow-[0_30px_70px_rgba(0,0,0,0.95)] will-change-transform"
       >
-        {/* Top row */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 sm:pb-6 md:pb-8 border-b border-[#D7E2EA]/20">
+        {/* Top Area: Header with Number, Category/Label, Name and CTA */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-6 sm:pb-8 border-b border-[#D7E2EA]/20">
           <div className="flex items-center gap-4 sm:gap-6 md:gap-8 flex-wrap">
             {/* Number */}
             <span
-              className="font-black text-[#D7E2EA] leading-none select-none"
-              style={{ fontSize: 'clamp(2.2rem, 5.5vw, 5rem)' }}
+              className="font-black text-[#D7E2EA] leading-none select-none tracking-tight"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)' }}
             >
               {project.number}
             </span>
 
-            {/* Category and Name */}
+            {/* Label and Name */}
             <div className="flex flex-col">
-              <span className="text-[11px] sm:text-xs md:text-sm font-semibold tracking-widest text-[#D7E2EA]/60 uppercase">
-                {project.category}
+              <span className="text-[11px] sm:text-xs md:text-sm font-semibold tracking-widest text-[#D7E2EA]/70 uppercase">
+                {project.label || project.category}
               </span>
-              <h3 className="font-medium uppercase text-base sm:text-xl md:text-2xl lg:text-3xl text-[#D7E2EA] tracking-wide">
+              <h3 className="font-black uppercase text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#D7E2EA] tracking-wide mt-0.5">
                 {project.name}
               </h3>
             </div>
           </div>
 
-          {/* Live Project Button */}
+          {/* Right-side CTA */}
           <LiveProjectButton
             onClick={() => onLiveProjectClick(project)}
-            label="Live Project"
+            label="VIEW BUILD"
           />
         </div>
 
-        {/* Bottom row: Two-column image grid */}
-        <div className="grid grid-cols-12 gap-3 sm:gap-4 md:gap-6 pt-4 sm:pt-6 md:pt-8 flex-1">
-          {/* Left column (40% width / 5 cols) */}
-          <div className="col-span-12 sm:col-span-5 flex flex-col gap-3 sm:gap-4 md:gap-6 justify-between">
-            {/* Left top image */}
-            <div
-              data-cursor="view"
-              className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-neutral-900 border border-neutral-800 shadow-md group relative cursor-pointer"
-              style={{ height: 'clamp(130px, 16vw, 230px)' }}
-              onClick={() => onLiveProjectClick(project)}
-            >
-              <motion.img
-                src={project.col1Img1}
-                alt={`${project.name} asset 1`}
-                loading="lazy"
-                style={{
-                  y: yParallax1,
-                  scale: 1.15,
-                }}
-                className="w-full h-full object-cover will-change-transform transition-[filter] duration-500 group-hover:brightness-110"
-              />
+        {/* Short Description */}
+        {project.description && (
+          <div className="pt-6 sm:pt-8 pb-4">
+            <p className="font-normal uppercase text-[#D7E2EA]/90 tracking-wide max-w-4xl text-xs sm:text-sm md:text-base leading-relaxed">
+              {project.description}
+            </p>
+          </div>
+        )}
+
+        {/* Capability Tags */}
+        {project.tags && project.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 sm:gap-2.5 pb-6 sm:pb-8">
+            {project.tags.map((tag) => (
+              <span
+                key={tag}
+                className="px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] md:text-xs font-medium tracking-wider uppercase bg-white/5 border border-[#D7E2EA]/20 text-[#D7E2EA]/80"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Main Visual Area: 3 Intentional Dark UI Wireframe / Mockup Frames */}
+        <div className="grid grid-cols-12 gap-4 sm:gap-5 md:gap-6 my-2">
+          {/* Frame 1: Large Desktop Dashboard Frame (7 cols desktop, full width mobile) */}
+          <div
+            data-cursor="view"
+            onClick={() => onLiveProjectClick(project)}
+            className="col-span-12 lg:col-span-7 rounded-[24px] sm:rounded-[32px] md:rounded-[40px] overflow-hidden bg-neutral-950 border border-neutral-800 p-4 sm:p-6 flex flex-col justify-between group relative cursor-pointer min-h-[300px] sm:min-h-[360px] md:min-h-[420px] transition-colors duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
+          >
+            {/* Window titlebar mockup */}
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-800/80 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500/80 inline-block" />
+                <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block" />
+                <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block" />
+                <span className="text-[10px] sm:text-xs tracking-wider text-neutral-400 font-mono ml-2 uppercase">
+                  agency-os.local / main
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-neutral-800/80 text-[10px] text-neutral-300 font-mono uppercase tracking-wider">
+                <LayoutDashboard size={11} className="text-purple-400" />
+                <span>DASHBOARD PREVIEW</span>
+              </div>
             </div>
 
-            {/* Left bottom image */}
-            <div
-              data-cursor="view"
-              className="w-full rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-neutral-900 border border-neutral-800 shadow-md group relative cursor-pointer"
-              style={{ height: 'clamp(160px, 22vw, 340px)' }}
-              onClick={() => onLiveProjectClick(project)}
-            >
-              <motion.img
-                src={project.col1Img2}
-                alt={`${project.name} asset 2`}
-                loading="lazy"
-                style={{
-                  y: yParallax2,
-                  scale: 1.15,
-                }}
-                className="w-full h-full object-cover will-change-transform transition-[filter] duration-500 group-hover:brightness-110"
-              />
+            {/* Wireframe Dashboard Content */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 my-3 sm:my-4">
+              <div className="rounded-xl bg-neutral-900/90 border border-neutral-800/80 p-2.5 sm:p-3">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-500 block mb-1">Pipeline Tracking</span>
+                <span className="text-sm sm:text-base font-bold text-white font-mono uppercase">Multi-Stage</span>
+                <div className="w-full bg-neutral-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div className="bg-purple-500 h-full w-[65%]" />
+                </div>
+              </div>
+              <div className="rounded-xl bg-neutral-900/90 border border-neutral-800/80 p-2.5 sm:p-3">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-500 block mb-1">Outreach Status</span>
+                <span className="text-sm sm:text-base font-bold text-white font-mono uppercase">Automated</span>
+                <div className="w-full bg-neutral-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div className="bg-blue-400 h-full w-[80%]" />
+                </div>
+              </div>
+              <div className="rounded-xl bg-neutral-900/90 border border-neutral-800/80 p-2.5 sm:p-3">
+                <span className="text-[9px] uppercase tracking-wider text-neutral-500 block mb-1">Sync Cadence</span>
+                <span className="text-sm sm:text-base font-bold text-white font-mono uppercase">Scheduled</span>
+                <div className="w-full bg-neutral-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                  <div className="bg-emerald-400 h-full w-[45%]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Wireframe Lead Stages Mockup */}
+            <div className="rounded-2xl bg-neutral-900/60 border border-neutral-800/80 p-3 sm:p-3.5 space-y-2 flex-1 flex flex-col justify-around">
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-neutral-400 border-b border-neutral-800/60 pb-1.5 font-mono">
+                <span className="uppercase tracking-wider">Workspace Channel</span>
+                <span className="uppercase tracking-wider">Pipeline State</span>
+                <span className="uppercase tracking-wider hidden sm:inline">Priority</span>
+              </div>
+              {[
+                { name: 'Lead Qualification & Scoring', stage: 'In Queue', status: 'Priority', color: 'bg-amber-400/20 text-amber-300' },
+                { name: 'Personalized Outreach Batch', stage: 'Active Dispatch', status: 'Automated', color: 'bg-purple-400/20 text-purple-300' },
+                { name: 'Follow-Up & Scheduling Matrix', stage: 'Cadence Set', status: 'Syncing', color: 'bg-neutral-800 text-neutral-300' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between py-1.5 text-xs text-neutral-300">
+                  <span className="font-medium text-white/90 truncate max-w-[150px] sm:max-w-[220px]">{item.name}</span>
+                  <span className={`px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-mono uppercase ${item.color}`}>
+                    {item.stage}
+                  </span>
+                  <span className="text-[10px] text-neutral-500 hidden sm:inline">{item.status}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Wireframe subtle watermark footer */}
+            <div className="flex items-center justify-between pt-3 text-[10px] font-mono text-neutral-600 border-t border-neutral-800/60 mt-3">
+              <span>AGENCY OS ENGINE v1.2</span>
+              <span className="flex items-center gap-1 text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                SYSTEM ONLINE
+              </span>
             </div>
           </div>
 
-          {/* Right column (60% width / 7 cols) - 1 tall image */}
-          <div
-            data-cursor="view"
-            className="col-span-12 sm:col-span-7 rounded-[40px] sm:rounded-[50px] md:rounded-[60px] overflow-hidden bg-neutral-900 border border-neutral-800 shadow-md group relative min-h-[220px] sm:min-h-full cursor-pointer"
-            onClick={() => onLiveProjectClick(project)}
-          >
-            <motion.img
-              src={project.col2Img}
-              alt={`${project.name} highlight showcase`}
-              loading="lazy"
-              style={{
-                y: yParallaxHero,
-                scale: scaleHero,
-              }}
-              className="w-full h-full object-cover will-change-transform transition-[filter] duration-500 group-hover:brightness-110"
-            />
+          {/* Right Column: 2 Mockup Panels (5 cols desktop, full width mobile) */}
+          <div className="col-span-12 lg:col-span-5 flex flex-col gap-4 sm:gap-5 md:gap-6">
+            {/* Frame 2: Smaller Narrow Panel / Lead Workspace */}
+            <div
+              data-cursor="view"
+              onClick={() => onLiveProjectClick(project)}
+              className="rounded-[24px] sm:rounded-[32px] md:rounded-[40px] bg-neutral-950 border border-neutral-800 p-4 sm:p-5 flex flex-col justify-between group relative cursor-pointer min-h-[190px] sm:min-h-[210px] transition-colors duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
+            >
+              <div className="flex items-center justify-between pb-2.5 border-b border-neutral-800/80 text-xs">
+                <div className="flex items-center gap-1.5 font-mono text-[10px] text-neutral-400 uppercase tracking-wider">
+                  <Users size={12} className="text-blue-400" />
+                  <span>LEAD WORKSPACE</span>
+                </div>
+                <span className="text-[10px] font-mono text-purple-400 px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20">
+                  AI ASSISTED
+                </span>
+              </div>
+
+              <div className="my-2.5 space-y-2">
+                <div className="p-2.5 rounded-xl bg-neutral-900/80 border border-neutral-800/80 flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-semibold text-white">Outreach Personalization</div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">Dynamic hooks generated from tech stack data</div>
+                  </div>
+                  <Sparkles size={14} className="text-purple-400 shrink-0 ml-2" />
+                </div>
+                <div className="p-2.5 rounded-xl bg-neutral-900/80 border border-neutral-800/80 flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-semibold text-white">Smart Follow-up Timing</div>
+                    <div className="text-[10px] text-neutral-400 mt-0.5">Automated cadence triggered on open events</div>
+                  </div>
+                  <Clock size={14} className="text-blue-400 shrink-0 ml-2" />
+                </div>
+              </div>
+
+              <div className="text-[10px] font-mono text-neutral-500 flex items-center justify-between pt-1">
+                <span>STAGE: ENGAGED</span>
+                <span>AUTO-SYNC ACTIVE</span>
+              </div>
+            </div>
+
+            {/* Frame 3: Small UI Detail Frame / Pipeline Detail */}
+            <motion.div
+              data-cursor="view"
+              style={{ y: yParallaxDetail }}
+              onClick={() => onLiveProjectClick(project)}
+              className="rounded-[24px] sm:rounded-[32px] md:rounded-[40px] bg-neutral-950 border border-neutral-800 p-4 sm:p-5 flex flex-col justify-between group relative cursor-pointer min-h-[160px] sm:min-h-[180px] transition-colors duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-neutral-800/80 text-xs">
+                <div className="flex items-center gap-1.5 font-mono text-[10px] text-neutral-400 uppercase tracking-wider">
+                  <GitBranch size={12} className="text-emerald-400" />
+                  <span>PIPELINE DETAIL</span>
+                </div>
+                <span className="text-[10px] font-mono text-neutral-500 uppercase">
+                  5 ACTIVE COLUMNS
+                </span>
+              </div>
+
+              {/* Visual Pipeline Bar Sequence */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-2">
+                {[
+                  { label: 'DISCOVERY', state: 'STEP 01', active: false },
+                  { label: 'QUALIFIED', state: 'STEP 02', active: false },
+                  { label: 'DISPATCH', state: 'STEP 03', active: true },
+                  { label: 'ENGAGED', state: 'STEP 04', active: true },
+                ].map((col, i) => (
+                  <div
+                    key={i}
+                    className={`rounded-lg p-2 text-center border ${
+                      col.active
+                        ? 'bg-neutral-900 border-purple-500/40 text-purple-300'
+                        : 'bg-neutral-900/40 border-neutral-800/80 text-neutral-400'
+                    }`}
+                  >
+                    <span className="text-[9px] font-mono block text-neutral-500 truncate">{col.label}</span>
+                    <span className="text-[11px] sm:text-xs font-semibold font-mono text-white block mt-0.5">{col.state}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] font-mono text-neutral-500 pt-1">
+                <span>METRICS REFRESH: REALTIME</span>
+                <span className="text-white/60 group-hover:text-white flex items-center gap-1 transition-colors">
+                  EXPAND <ArrowUpRight size={11} />
+                </span>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Bottom Area: Compact Metadata */}
+        <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-[#D7E2EA]/20 flex flex-wrap items-center justify-between gap-y-3 gap-x-6 text-xs sm:text-sm">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[#D7E2EA]/50 uppercase tracking-wider text-[11px] sm:text-xs">STATUS —</span>
+            <span className="font-semibold text-white uppercase tracking-wider text-[11px] sm:text-xs">
+              {project.status || 'IN DEVELOPMENT'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[#D7E2EA]/50 uppercase tracking-wider text-[11px] sm:text-xs">TYPE —</span>
+            <span className="font-semibold text-white uppercase tracking-wider text-[11px] sm:text-xs">
+              {project.type || 'INTERNAL TOOL'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[#D7E2EA]/50 uppercase tracking-wider text-[11px] sm:text-xs">FOCUS —</span>
+            <span className="font-semibold text-white uppercase tracking-wider text-[11px] sm:text-xs">
+              {project.focus || 'LEADS / OUTREACH / PIPELINE'}
+            </span>
           </div>
         </div>
       </motion.div>

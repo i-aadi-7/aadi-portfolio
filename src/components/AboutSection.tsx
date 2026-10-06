@@ -86,17 +86,35 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         {/* Animated paragraph 1 */}
         <AnimatedText
           text="I DESIGN AND BUILD MODERN DIGITAL EXPERIENCES THAT FEEL SHARP, FAST, AND DIFFERENT."
-          className="text-[#D7E2EA] font-medium uppercase text-center leading-[1.85] max-w-[540px] sm:max-w-[570px] mx-auto select-none tracking-wide"
-          style={{ fontSize: 'clamp(1rem, 1.75vw, 1.35rem)' } as any}
+          className="text-[#D7E2EA] font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[720px] mx-auto select-none tracking-wide"
+          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
         />
 
         <div className="h-5 sm:h-7" />
 
         {/* Animated paragraph 2 */}
         <AnimatedText
-          text="I MIX UI/UX, FRONTEND DEVELOPMENT, MOTION, AND INTERACTION TO TURN IDEAS INTO WEBSITES PEOPLE REMEMBER."
-          className="text-[#D7E2EA]/90 font-medium uppercase text-center leading-[1.85] max-w-[540px] sm:max-w-[580px] mx-auto select-none tracking-wide"
-          style={{ fontSize: 'clamp(1rem, 1.75vw, 1.35rem)' } as any}
+          text="I MIX UI/UX, FRONTEND DEVELOPMENT, MOTION, AND INTERACTION TO TURN IDEAS INTO POLISHED WEBSITES PEOPLE REMEMBER."
+          className="text-[#D7E2EA]/90 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide"
+          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
+        />
+
+        <div className="h-5 sm:h-7" />
+
+        {/* Animated paragraph 3 */}
+        <AnimatedText
+          text="I'M ESPECIALLY INTERESTED IN INTERACTIVE WEB EXPERIENCES, STRONG VISUAL SYSTEMS, AND BUILDING PRODUCTS THAT FEEL AS GOOD TO USE AS THEY LOOK."
+          className="text-[#D7E2EA]/90 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[760px] mx-auto select-none tracking-wide"
+          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
+        />
+
+        <div className="h-5 sm:h-7" />
+
+        {/* Animated paragraph 4 */}
+        <AnimatedText
+          text="RIGHT NOW, I'M ALSO BUILDING MY OWN AGENCY OS / CRM TO MANAGE LEADS, OUTREACH, FOLLOW-UPS, AND CLIENT WORK MORE EFFECTIVELY."
+          className="text-[#D7E2EA]/80 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide"
+          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
         />
 
         {/* Gap between text block and button */}

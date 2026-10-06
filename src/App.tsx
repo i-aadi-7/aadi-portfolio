@@ -16,10 +16,12 @@ import { ArrowUp, Instagram, Twitter } from 'lucide-react';
 
 function PortfolioContent() {
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [contactContext, setContactContext] = useState<'default' | 'project'>('default');
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
   const { scrollTo: smoothScrollTo } = useSmoothScroll();
 
-  const handleOpenContact = () => {
+  const handleOpenContact = (context: 'default' | 'project' = 'default') => {
+    setContactContext(context);
     setIsContactOpen(true);
   };
 
@@ -121,12 +123,13 @@ function PortfolioContent() {
       <ContactModal
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
+        context={contactContext}
       />
 
       <ProjectModal
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
-        onContactClick={() => setIsContactOpen(true)}
+        onContactClick={() => handleOpenContact('project')}
       />
     </div>
   );

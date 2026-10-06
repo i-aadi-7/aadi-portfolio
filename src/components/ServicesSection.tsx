@@ -10,33 +10,33 @@ interface ServiceItem {
 const SERVICES: ServiceItem[] = [
   {
     number: '01',
-    name: '3D Modeling',
+    name: 'WEBSITE DESIGN',
     description:
-      'Creation of detailed objects, characters, or environments tailored to specific client needs, ideal for games, products, and visualizations.',
+      'Modern, conversion-focused website design with strong hierarchy, typography, layout, and brand presentation.',
   },
   {
     number: '02',
-    name: 'Rendering',
+    name: 'WEBSITE DEVELOPMENT',
     description:
-      'High-quality, photorealistic renders that showcase designs with custom lighting, textures, and materials to bring concepts to life.',
+      'Responsive, fast, production-ready websites built with modern frontend technologies.',
   },
   {
     number: '03',
-    name: 'Motion Design',
+    name: 'UI/UX DESIGN',
     description:
-      'Dynamic animations and motion graphics that add energy and storytelling to brands, products, and digital experiences.',
+      'Clear interfaces and user flows designed around usability, clarity, and business goals.',
   },
   {
     number: '04',
-    name: 'Branding',
+    name: '3D & INTERACTIVE WEB',
     description:
-      'Crafting cohesive visual identities -- from logos to full brand systems -- that communicate a clear and memorable presence.',
+      'Immersive web experiences using 3D, motion, scroll interactions, and creative frontend techniques.',
   },
   {
     number: '05',
-    name: 'Web Design',
+    name: 'WEBSITE REDESIGN',
     description:
-      'Designing clean, modern, and conversion-focused websites with attention to layout, typography, and user experience.',
+      'Modernizing weak or outdated websites with better visual design, UX, responsiveness, and performance.',
   },
 ];
 
