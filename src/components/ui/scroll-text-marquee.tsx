@@ -46,7 +46,7 @@ export function ScrollTextMarquee({
 
   const directionFactor = useRef<number>(1);
 
-  useAnimationFrame((t, delta) => {
+  useAnimationFrame((_t, delta) => {
     // If reduced motion is requested, use very slow constant crawl without velocity-driven bursts
     if (prefersReducedMotion) {
       const moveBy = baseVelocity * 0.15 * (delta / 1000);

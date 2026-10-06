@@ -28,25 +28,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
       <HeroParticles />
 
       {/* Clean, confident navbar */}
-      <FadeIn delay={0} y={-20} as="nav" className="w-full z-30">
-        <ul className="flex items-center justify-between px-6 md:px-10 pt-6 md:pt-8 text-[#D7E2EA] font-medium uppercase tracking-[0.16em] text-sm md:text-base lg:text-[1.2rem]">
-          <li>
-            <button
-              onClick={() => scrollTo('about')}
-              className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
-            >
-              ABOUT
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={onContactClick || (() => scrollTo('contact'))}
-              className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
-            >
-              CONTACT
-            </button>
-          </li>
-        </ul>
+      <FadeIn delay={0} y={-20} className="w-full z-30">
+        <nav aria-label="Primary navigation">
+          <ul className="flex items-center justify-between px-6 md:px-10 pt-6 md:pt-8 text-[#D7E2EA] font-medium uppercase tracking-[0.16em] text-sm md:text-base lg:text-[1.2rem]">
+            <li>
+              <button
+                onClick={() => scrollTo('about')}
+                className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
+              >
+                ABOUT
+              </button>
+            </li>
+            <li>
+              <button
+                onClick={onContactClick || (() => scrollTo('contact'))}
+                className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
+              >
+                CONTACT
+              </button>
+            </li>
+          </ul>
+        </nav>
       </FadeIn>
 
       {/* Center Stage: Heading with overlapping centered avatar */}

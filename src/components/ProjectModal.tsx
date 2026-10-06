@@ -127,9 +127,9 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 
             {/* Description */}
             <div className="mb-6">
-              <h4 className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#D7E2EA]/60 mb-2">
+              <h3 className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#D7E2EA]/60 mb-2">
                 Overview
-              </h4>
+              </h3>
               <p className="text-sm sm:text-base font-light text-[#D7E2EA]/90 leading-relaxed">
                 A private AI-assisted workspace built to manage leads, outreach, follow-ups, pipeline stages, and client activity for my web studio.
               </p>
@@ -137,9 +137,9 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 
             {/* Capabilities */}
             <div className="mb-6">
-              <h4 className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#D7E2EA]/60 mb-3">
+              <h3 className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-[#D7E2EA]/60 mb-3">
                 Capabilities
-              </h4>
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {(project.tags || [
                   'LEAD MANAGEMENT',

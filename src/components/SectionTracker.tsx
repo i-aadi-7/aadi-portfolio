@@ -55,7 +55,7 @@ export const SectionTracker: React.FC = () => {
       transition={{ duration: 0.3 }}
       className="fixed right-4 sm:right-8 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col gap-3 py-3 px-2 rounded-full bg-neutral-900/60 backdrop-blur-md border border-white/10 shadow-2xl"
     >
-      {SECTIONS.map((sec, i) => {
+      {SECTIONS.map((sec) => {
         const isActive = activeSection === sec.id;
         return (
           <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { HeroSection } from './components/HeroSection';
 import { MarqueeSection } from './components/MarqueeSection';
 import { AboutSection } from './components/AboutSection';
@@ -168,20 +168,23 @@ function PortfolioContent() {
       {/* Stylized reactive custom mouse cursor */}
       <CustomCursor />
 
-      {/* 1. HERO SECTION */}
-      <HeroSection onContactClick={handleOpenContact} />
+      {/* Main Landmark */}
+      <main id="main-content">
+        {/* 1. HERO SECTION */}
+        <HeroSection onContactClick={handleOpenContact} />
 
-      {/* 2. MARQUEE SECTION */}
-      <MarqueeSection onContactClick={handleOpenContact} />
+        {/* 2. MARQUEE SECTION */}
+        <MarqueeSection onContactClick={handleOpenContact} />
 
-      {/* 3. ABOUT SECTION */}
-      <AboutSection onContactClick={handleOpenContact} />
+        {/* 3. ABOUT SECTION */}
+        <AboutSection onContactClick={handleOpenContact} />
 
-      {/* 4. SERVICES SECTION */}
-      <ServicesSection />
+        {/* 4. SERVICES SECTION */}
+        <ServicesSection />
 
-      {/* 5. PROJECTS SECTION */}
-      <ProjectsSection onLiveProjectClick={handleOpenProject} />
+        {/* 5. PROJECTS SECTION */}
+        <ProjectsSection onLiveProjectClick={handleOpenProject} />
+      </main>
 
       {/* Footer */}
       <footer
@@ -305,38 +308,40 @@ function PortfolioContent() {
               </ul>
             </nav>
 
-            <ul className="flex flex-wrap items-center gap-x-6 gap-y-1 sm:gap-x-8" aria-label="Social links">
-              {[
-                { label: 'GITHUB', url: socialLinks.github },
-                { label: 'LINKEDIN', url: socialLinks.linkedin },
-                { label: 'INSTAGRAM', url: socialLinks.instagram },
-              ].map((item) => {
-                const isEnabled = Boolean(item.url && item.url.trim().length > 0);
+            <nav aria-label="Social profiles">
+              <ul className="flex flex-wrap items-center gap-x-6 gap-y-1 sm:gap-x-8">
+                {[
+                  { label: 'GITHUB', url: socialLinks.github },
+                  { label: 'LINKEDIN', url: socialLinks.linkedin },
+                  { label: 'INSTAGRAM', url: socialLinks.instagram },
+                ].map((item) => {
+                  const isEnabled = Boolean(item.url && item.url.trim().length > 0);
 
-                return (
-                  <motion.li key={item.label} variants={footerItemReveal}>
-                    {isEnabled ? (
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group/social inline-flex min-h-11 items-center gap-1.5 py-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#D7E2EA]/62 transition-colors duration-200 hover:text-[#F3F4F6] focus:outline-none focus-visible:text-white"
-                      >
-                        <span>{item.label}</span>
-                        <ArrowUpRight size={12} className="transition-transform duration-200 group-hover/social:translate-x-0.5 group-hover/social:-translate-y-0.5" />
-                      </a>
-                    ) : (
-                      <span
-                        aria-disabled="true"
-                        className="inline-flex min-h-11 cursor-default select-none items-center py-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#D7E2EA]/28"
-                      >
-                        {item.label}
-                      </span>
-                    )}
-                  </motion.li>
-                );
-              })}
-            </ul>
+                  return (
+                    <motion.li key={item.label} variants={footerItemReveal}>
+                      {isEnabled ? (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group/social inline-flex min-h-11 items-center gap-1.5 py-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#D7E2EA]/62 transition-colors duration-200 hover:text-[#F3F4F6] focus:outline-none focus-visible:text-white"
+                        >
+                          <span>{item.label}</span>
+                          <ArrowUpRight size={12} className="transition-transform duration-200 group-hover/social:translate-x-0.5 group-hover/social:-translate-y-0.5" />
+                        </a>
+                      ) : (
+                        <span
+                          aria-disabled="true"
+                          className="inline-flex min-h-11 cursor-default select-none items-center py-2 text-[11px] font-mono uppercase tracking-[0.16em] text-[#D7E2EA]/28"
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                    </motion.li>
+                  );
+                })}
+              </ul>
+            </nav>
           </motion.div>
 
           <motion.div
