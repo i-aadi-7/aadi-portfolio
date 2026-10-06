@@ -1,0 +1,397 @@
+- generic [ref=e3]:
+  - generic [ref=e652]:
+    - button "Jump to Intro section" [ref=e653] [cursor=pointer]:
+      - generic: Intro
+    - button "Jump to Preview section" [ref=e655] [cursor=pointer]:
+      - generic: Preview
+    - button "Jump to About section" [ref=e657] [cursor=pointer]:
+      - generic: About
+    - button "Jump to Services section" [ref=e659] [cursor=pointer]:
+      - generic: Services
+    - button "Jump to Projects section" [ref=e661] [cursor=pointer]:
+      - generic: Projects
+  - generic [ref=e34]:
+    - navigation [ref=e35]:
+      - list [ref=e36]:
+        - listitem [ref=e37]:
+          - button "About" [ref=e38] [cursor=pointer]
+        - listitem [ref=e39]:
+          - button "Contact" [ref=e40] [cursor=pointer]
+    - heading "Hi, i'm aadi" [level=1] [ref=e42]:
+      - generic [ref=e43]: Hi,
+      - generic [ref=e44]: i'm
+      - generic [ref=e45]: aadi
+    - generic [ref=e665]:
+      - img "Hero Portrait"
+    - generic [ref=e46]:
+      - paragraph [ref=e48]: web designer & developercrafting modern, interactivedigital experiences
+      - button "Contact Me" [ref=e50] [cursor=pointer]
+  - generic [ref=e51]:
+    - generic [ref=e52]:
+      - generic [ref=e54]:
+        - generic [ref=e56]:
+          - generic [ref=e57]: WEB DESIGN
+          - generic [ref=e58]: —
+          - generic [ref=e59]: UI/UX
+          - generic [ref=e60]: —
+          - generic [ref=e61]: INTERACTIVE WEB
+          - generic [ref=e62]: —
+          - generic [ref=e63]: 3D EXPERIENCES
+          - generic [ref=e64]: —
+        - generic [ref=e66]:
+          - generic [ref=e67]: WEB DESIGN
+          - generic [ref=e68]: —
+          - generic [ref=e69]: UI/UX
+          - generic [ref=e70]: —
+          - generic [ref=e71]: INTERACTIVE WEB
+          - generic [ref=e72]: —
+          - generic [ref=e73]: 3D EXPERIENCES
+          - generic [ref=e74]: —
+        - generic [ref=e76]:
+          - generic [ref=e77]: WEB DESIGN
+          - generic [ref=e78]: —
+          - generic [ref=e79]: UI/UX
+          - generic [ref=e80]: —
+          - generic [ref=e81]: INTERACTIVE WEB
+          - generic [ref=e82]: —
+          - generic [ref=e83]: 3D EXPERIENCES
+          - generic [ref=e84]: —
+        - generic [ref=e86]:
+          - generic [ref=e87]: WEB DESIGN
+          - generic [ref=e88]: —
+          - generic [ref=e89]: UI/UX
+          - generic [ref=e90]: —
+          - generic [ref=e91]: INTERACTIVE WEB
+          - generic [ref=e92]: —
+          - generic [ref=e93]: 3D EXPERIENCES
+          - generic [ref=e94]: —
+      - generic [ref=e96]:
+        - generic [ref=e98]:
+          - generic [ref=e99]: WEB DEVELOPMENT
+          - generic [ref=e100]: —
+          - generic [ref=e101]: MOTION
+          - generic [ref=e102]: —
+          - generic [ref=e103]: CREATIVE DEVELOPMENT
+          - generic [ref=e104]: —
+          - generic [ref=e105]: RESPONSIVE DESIGN
+          - generic [ref=e106]: —
+        - generic [ref=e108]:
+          - generic [ref=e109]: WEB DEVELOPMENT
+          - generic [ref=e110]: —
+          - generic [ref=e111]: MOTION
+          - generic [ref=e112]: —
+          - generic [ref=e113]: CREATIVE DEVELOPMENT
+          - generic [ref=e114]: —
+          - generic [ref=e115]: RESPONSIVE DESIGN
+          - generic [ref=e116]: —
+        - generic [ref=e118]:
+          - generic [ref=e119]: WEB DEVELOPMENT
+          - generic [ref=e120]: —
+          - generic [ref=e121]: MOTION
+          - generic [ref=e122]: —
+          - generic [ref=e123]: CREATIVE DEVELOPMENT
+          - generic [ref=e124]: —
+          - generic [ref=e125]: RESPONSIVE DESIGN
+          - generic [ref=e126]: —
+        - generic [ref=e128]:
+          - generic [ref=e129]: WEB DEVELOPMENT
+          - generic [ref=e130]: —
+          - generic [ref=e131]: MOTION
+          - generic [ref=e132]: —
+          - generic [ref=e133]: CREATIVE DEVELOPMENT
+          - generic [ref=e134]: —
+          - generic [ref=e135]: RESPONSIVE DESIGN
+          - generic [ref=e136]: —
+    - generic [ref=e138]:
+      - heading "Got an idea? Let's build it." [level=2] [ref=e139]: Got an idea?Let's build it.
+      - paragraph [ref=e140]: Turning ideas into fast, polished, interactive web experiences.
+      - button "Contact Me" [ref=e142] [cursor=pointer]
+  - generic [ref=e143]:
+    - generic:
+      - generic:
+        - img "3D Floating Browser Window"
+    - generic:
+      - generic:
+        - img "3D Layered UI Panels Stack"
+    - generic:
+      - generic:
+        - img "3D Code Brackets Cube"
+    - generic:
+      - generic:
+        - img "3D Liquid Chrome Cursor"
+    - generic [ref=e144]:
+      - heading "About me" [level=2] [ref=e146]
+      - paragraph [ref=e147]:
+        - generic [ref=e148]: I
+        - generic [ref=e153]:
+          - generic [ref=e154]: D
+          - generic [ref=e156]: E
+          - generic [ref=e158]: S
+          - generic [ref=e160]: I
+          - generic [ref=e162]: G
+          - generic [ref=e164]: "N"
+        - generic [ref=e168]:
+          - generic [ref=e169]: A
+          - generic [ref=e171]: "N"
+          - generic [ref=e173]: D
+        - generic [ref=e177]:
+          - generic [ref=e178]: B
+          - generic [ref=e180]: U
+          - generic [ref=e182]: I
+          - generic [ref=e184]: L
+          - generic [ref=e186]: D
+        - generic [ref=e190]:
+          - generic [ref=e191]: M
+          - generic [ref=e193]: O
+          - generic [ref=e195]: D
+          - generic [ref=e197]: E
+          - generic [ref=e199]: R
+          - generic [ref=e201]: "N"
+        - generic [ref=e205]:
+          - generic [ref=e206]: D
+          - generic [ref=e208]: I
+          - generic [ref=e210]: G
+          - generic [ref=e212]: I
+          - generic [ref=e214]: T
+          - generic [ref=e216]: A
+          - generic [ref=e218]: L
+        - generic [ref=e222]:
+          - generic [ref=e223]: E
+          - generic [ref=e225]: X
+          - generic [ref=e227]: P
+          - generic [ref=e229]: E
+          - generic [ref=e231]: R
+          - generic [ref=e233]: I
+          - generic [ref=e235]: E
+          - generic [ref=e237]: "N"
+          - generic [ref=e239]: C
+          - generic [ref=e241]: E
+          - generic [ref=e243]: S
+        - generic [ref=e247]:
+          - generic [ref=e248]: T
+          - generic [ref=e250]: H
+          - generic [ref=e252]: A
+          - generic [ref=e254]: T
+        - generic [ref=e258]:
+          - generic [ref=e259]: F
+          - generic [ref=e261]: E
+          - generic [ref=e263]: E
+          - generic [ref=e265]: L
+        - generic [ref=e269]:
+          - generic [ref=e270]: S
+          - generic [ref=e272]: H
+          - generic [ref=e274]: A
+          - generic [ref=e276]: R
+          - generic [ref=e278]: P
+          - generic [ref=e280]: ","
+        - generic [ref=e284]:
+          - generic [ref=e285]: F
+          - generic [ref=e287]: A
+          - generic [ref=e289]: S
+          - generic [ref=e291]: T
+          - generic [ref=e293]: ","
+        - generic [ref=e297]:
+          - generic [ref=e298]: A
+          - generic [ref=e300]: "N"
+          - generic [ref=e302]: D
+        - generic [ref=e306]:
+          - generic [ref=e307]: D
+          - generic [ref=e309]: I
+          - generic [ref=e311]: F
+          - generic [ref=e313]: F
+          - generic [ref=e315]: E
+          - generic [ref=e317]: R
+          - generic [ref=e319]: E
+          - generic [ref=e321]: "N"
+          - generic [ref=e323]: T
+          - generic [ref=e325]: .
+      - paragraph [ref=e327]:
+        - generic [ref=e328]: I
+        - generic [ref=e333]:
+          - generic [ref=e334]: M
+          - generic [ref=e336]: I
+          - generic [ref=e338]: X
+        - generic [ref=e342]:
+          - generic [ref=e343]: U
+          - generic [ref=e345]: I
+          - generic [ref=e347]: /
+          - generic [ref=e349]: U
+          - generic [ref=e351]: X
+          - generic [ref=e353]: ","
+        - generic [ref=e357]:
+          - generic [ref=e358]: F
+          - generic [ref=e360]: R
+          - generic [ref=e362]: O
+          - generic [ref=e364]: "N"
+          - generic [ref=e366]: T
+          - generic [ref=e368]: E
+          - generic [ref=e370]: "N"
+          - generic [ref=e372]: D
+        - generic [ref=e376]:
+          - generic [ref=e377]: D
+          - generic [ref=e379]: E
+          - generic [ref=e381]: V
+          - generic [ref=e383]: E
+          - generic [ref=e385]: L
+          - generic [ref=e387]: O
+          - generic [ref=e389]: P
+          - generic [ref=e391]: M
+          - generic [ref=e393]: E
+          - generic [ref=e395]: "N"
+          - generic [ref=e397]: T
+          - generic [ref=e399]: ","
+        - generic [ref=e403]:
+          - generic [ref=e404]: M
+          - generic [ref=e406]: O
+          - generic [ref=e408]: T
+          - generic [ref=e410]: I
+          - generic [ref=e412]: O
+          - generic [ref=e414]: "N"
+          - generic [ref=e416]: ","
+        - generic [ref=e420]:
+          - generic [ref=e421]: A
+          - generic [ref=e423]: "N"
+          - generic [ref=e425]: D
+        - generic [ref=e429]:
+          - generic [ref=e430]: I
+          - generic [ref=e432]: "N"
+          - generic [ref=e434]: T
+          - generic [ref=e436]: E
+          - generic [ref=e438]: R
+          - generic [ref=e440]: A
+          - generic [ref=e442]: C
+          - generic [ref=e444]: T
+          - generic [ref=e446]: I
+          - generic [ref=e448]: O
+          - generic [ref=e450]: "N"
+        - generic [ref=e454]:
+          - generic [ref=e455]: T
+          - generic [ref=e457]: O
+        - generic [ref=e461]:
+          - generic [ref=e462]: T
+          - generic [ref=e464]: U
+          - generic [ref=e466]: R
+          - generic [ref=e468]: "N"
+        - generic [ref=e472]:
+          - generic [ref=e473]: I
+          - generic [ref=e475]: D
+          - generic [ref=e477]: E
+          - generic [ref=e479]: A
+          - generic [ref=e481]: S
+        - generic [ref=e485]:
+          - generic [ref=e486]: I
+          - generic [ref=e488]: "N"
+          - generic [ref=e490]: T
+          - generic [ref=e492]: O
+        - generic [ref=e496]:
+          - generic [ref=e497]: W
+          - generic [ref=e499]: E
+          - generic [ref=e501]: B
+          - generic [ref=e503]: S
+          - generic [ref=e505]: I
+          - generic [ref=e507]: T
+          - generic [ref=e509]: E
+          - generic [ref=e511]: S
+        - generic [ref=e515]:
+          - generic [ref=e516]: P
+          - generic [ref=e518]: E
+          - generic [ref=e520]: O
+          - generic [ref=e522]: P
+          - generic [ref=e524]: L
+          - generic [ref=e526]: E
+        - generic [ref=e530]:
+          - generic [ref=e531]: R
+          - generic [ref=e533]: E
+          - generic [ref=e535]: M
+          - generic [ref=e537]: E
+          - generic [ref=e539]: M
+          - generic [ref=e541]: B
+          - generic [ref=e543]: E
+          - generic [ref=e545]: R
+          - generic [ref=e547]: .
+      - button "Contact Me" [ref=e551] [cursor=pointer]
+  - generic [ref=e553]:
+    - heading "Services" [level=2] [ref=e555]
+    - generic [ref=e556]:
+      - generic [ref=e557]:
+        - generic [ref=e558]: "01"
+        - generic [ref=e559]:
+          - heading "3D Modeling" [level=3] [ref=e560]
+          - paragraph [ref=e561]: Creation of detailed objects, characters, or environments tailored to specific client needs, ideal for games, products, and visualizations.
+      - generic [ref=e562]:
+        - generic [ref=e563]: "02"
+        - generic [ref=e564]:
+          - heading "Rendering" [level=3] [ref=e565]
+          - paragraph [ref=e566]: High-quality, photorealistic renders that showcase designs with custom lighting, textures, and materials to bring concepts to life.
+      - generic [ref=e567]:
+        - generic [ref=e568]: "03"
+        - generic [ref=e569]:
+          - heading "Motion Design" [level=3] [ref=e570]
+          - paragraph [ref=e571]: Dynamic animations and motion graphics that add energy and storytelling to brands, products, and digital experiences.
+      - generic [ref=e572]:
+        - generic [ref=e573]: "04"
+        - generic [ref=e574]:
+          - heading "Branding" [level=3] [ref=e575]
+          - paragraph [ref=e576]: Crafting cohesive visual identities -- from logos to full brand systems -- that communicate a clear and memorable presence.
+      - generic [ref=e577]:
+        - generic [ref=e578]: "05"
+        - generic [ref=e579]:
+          - heading "Web Design" [level=3] [ref=e580]
+          - paragraph [ref=e581]: Designing clean, modern, and conversion-focused websites with attention to layout, typography, and user experience.
+  - generic [ref=e583]:
+    - heading "Project" [level=2] [ref=e585]
+    - generic [ref=e586]:
+      - generic [ref=e588]:
+        - generic [ref=e589]:
+          - generic [ref=e590]:
+            - generic [ref=e591]: "01"
+            - generic [ref=e592]:
+              - generic [ref=e593]: Client
+              - heading "Nextlevel Studio" [level=3] [ref=e594]
+          - button "Live Project" [ref=e595] [cursor=pointer]
+        - generic [ref=e596]:
+          - generic [ref=e597]:
+            - img "Nextlevel Studio asset 1" [ref=e599] [cursor=pointer]
+            - img "Nextlevel Studio asset 2" [ref=e601] [cursor=pointer]
+          - img "Nextlevel Studio highlight showcase" [ref=e603] [cursor=pointer]
+      - generic [ref=e605]:
+        - generic [ref=e606]:
+          - generic [ref=e607]:
+            - generic [ref=e608]: "02"
+            - generic [ref=e609]:
+              - generic [ref=e610]: Personal
+              - heading "Aura Brand Identity" [level=3] [ref=e611]
+          - button "Live Project" [ref=e612] [cursor=pointer]
+        - generic [ref=e613]:
+          - generic [ref=e614]:
+            - img "Aura Brand Identity asset 1" [ref=e616] [cursor=pointer]
+            - img "Aura Brand Identity asset 2" [ref=e618] [cursor=pointer]
+          - img "Aura Brand Identity highlight showcase" [ref=e620] [cursor=pointer]
+      - generic [ref=e622]:
+        - generic [ref=e623]:
+          - generic [ref=e624]:
+            - generic [ref=e625]: "03"
+            - generic [ref=e626]:
+              - generic [ref=e627]: Client
+              - heading "Solaris Digital" [level=3] [ref=e628]
+          - button "Live Project" [ref=e629] [cursor=pointer]
+        - generic [ref=e630]:
+          - generic [ref=e631]:
+            - img "Solaris Digital asset 1" [ref=e633] [cursor=pointer]
+            - img "Solaris Digital asset 2" [ref=e635] [cursor=pointer]
+          - img "Solaris Digital highlight showcase" [ref=e637] [cursor=pointer]
+  - contentinfo [ref=e638]:
+    - generic [ref=e639]:
+      - generic [ref=e640]:
+        - generic [ref=e641]: Jack — 3D Creator
+        - generic [ref=e642]: Crafting striking & unforgettable 3D projects
+      - generic [ref=e643]:
+        - link "Twitter / X" [ref=e644] [cursor=pointer]:
+          - /url: https://twitter.com
+        - link "Instagram" [ref=e645] [cursor=pointer]:
+          - /url: https://instagram.com
+        - link "ArtStation" [ref=e646] [cursor=pointer]:
+          - /url: https://artstation.com
+      - button "Scroll back to top" [ref=e647] [cursor=pointer]:
+        - generic [ref=e648]: Top
+    - generic [ref=e651]: © 2026 Jack. All rights reserved. Kanit typography and custom 3D art direction.
