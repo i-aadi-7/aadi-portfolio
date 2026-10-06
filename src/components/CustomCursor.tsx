@@ -32,6 +32,15 @@ export const CustomCursor: React.FC = () => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
 
+      // Disable custom cursor inside modals / dialogs for native system cursor behavior
+      if (
+        target.closest('[role="dialog"]') ||
+        target.closest('[data-disable-custom-cursor="true"]')
+      ) {
+        setIsVisible(false);
+        return;
+      }
+
       if (
         target.closest('[data-cursor="view"]') ||
         target.closest('.group') && target.closest('#projects')
