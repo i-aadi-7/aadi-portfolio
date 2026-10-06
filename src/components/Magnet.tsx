@@ -4,6 +4,7 @@ interface MagnetProps {
   children: React.ReactNode;
   padding?: number;
   strength?: number;
+  maxDistance?: number;
   activeTransition?: string;
   inactiveTransition?: string;
   className?: string;
@@ -14,12 +15,14 @@ export const Magnet: React.FC<MagnetProps> = ({
   children,
   padding = 150,
   strength = 3,
+  maxDistance = 20,
   activeTransition = 'transform 0.3s ease-out',
   inactiveTransition = 'transform 0.6s ease-in-out',
   className = '',
   style,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const hoveredRef = useRef(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
@@ -40,19 +43,31 @@ export const Magnet: React.FC<MagnetProps> = ({
         mouseY <= rect.bottom + padding;
 
       if (isInside) {
+        hoveredRef.current = true;
         setIsHovered(true);
-        const deltaX = (mouseX - centerX) / strength;
-        const deltaY = (mouseY - centerY) / strength;
+        let deltaX = (mouseX - centerX) / strength;
+        let deltaY = (mouseY - centerY) / strength;
+
+        if (maxDistance !== undefined) {
+          const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+          if (dist > maxDistance) {
+            deltaX = (deltaX / dist) * maxDistance;
+            deltaY = (deltaY / dist) * maxDistance;
+          }
+        }
+
         setPosition({ x: deltaX, y: deltaY });
-      } else if (isHovered) {
+      } else if (hoveredRef.current) {
+        hoveredRef.current = false;
         setIsHovered(false);
         setPosition({ x: 0, y: 0 });
       }
     },
-    [padding, strength, isHovered]
+    [padding, strength, maxDistance]
   );
 
   const handleMouseLeave = useCallback(() => {
+    hoveredRef.current = false;
     setIsHovered(false);
     setPosition({ x: 0, y: 0 });
   }, []);
