@@ -317,6 +317,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
         const id = (window as any).turnstile.render(turnstileContainerRef.current, {
           sitekey: turnstileSiteKey,
           theme: 'dark',
+          appearance: 'interaction-only',
+          size: 'flexible',
           callback: (token: string) => {
             if (isMounted) {
               setTurnstileToken(token);
@@ -1270,11 +1272,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
                         {/* Cloudflare Turnstile */}
                         {turnstileSiteKey && (
-                          <div className="pt-2 flex justify-start">
-                            <div
-                              ref={turnstileContainerRef}
-                              className="min-h-[65px]"
-                            />
+                          <div className="flex justify-start">
+                            <div ref={turnstileContainerRef} />
                           </div>
                         )}
 
