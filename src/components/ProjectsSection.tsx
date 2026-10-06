@@ -34,8 +34,8 @@ export const ProjectsSection: React.FC<ProjectsSectionProps> = ({ onLiveProjectC
       className="bg-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] -mt-10 sm:-mt-12 md:-mt-14 z-10 relative px-5 sm:px-8 md:px-10 pt-20 sm:pt-24 md:pt-32 pb-32 sm:pb-40"
     >
       <div className="max-w-6xl mx-auto w-full">
-        {/* Heading: Renamed to CURRENT BUILD */}
-        <FadeIn delay={0} y={40} className="w-full text-center mb-12 sm:mb-16 md:mb-20">
+        {/* Heading: CURRENT BUILD */}
+        <FadeIn delay={0} y={35} className="w-full text-center mb-12 sm:mb-16 md:mb-20">
           <h2
             className="hero-heading font-black uppercase leading-none tracking-tight text-center w-full"
             style={{ fontSize: 'clamp(2.5rem, 10vw, 140px)' }}

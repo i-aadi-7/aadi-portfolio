@@ -27,13 +27,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
       {/* Interactive particle canvas background */}
       <HeroParticles />
 
-      {/* Navbar with only ABOUT and CONTACT */}
+      {/* Clean, confident navbar */}
       <FadeIn delay={0} y={-20} as="nav" className="w-full z-30">
         <ul className="flex items-center justify-between px-6 md:px-10 pt-6 md:pt-8 text-[#D7E2EA] font-medium uppercase tracking-[0.16em] text-sm md:text-base lg:text-[1.2rem]">
           <li>
             <button
               onClick={() => scrollTo('about')}
-              className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase"
+              className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
             >
               ABOUT
             </button>
@@ -41,7 +41,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
           <li>
             <button
               onClick={onContactClick || (() => scrollTo('contact'))}
-              className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase"
+              className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
             >
               CONTACT
             </button>
@@ -78,7 +78,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
                       y: 0,
                       transition: {
                         duration: 0.75,
-                        ease: [0.21, 0.47, 0.32, 0.98],
+                        ease: [0.22, 1, 0.36, 1],
                       },
                     },
                   }}
@@ -92,21 +92,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
           </motion.h1>
         </div>
 
-        {/* Floating Avatar overlay with Magnet effect */}
+        {/* Floating Avatar overlay with cursor-driven depth and ambient shadow */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto w-[clamp(160px,42vw,220px)] sm:w-[clamp(220px,30vw,280px)] md:w-[clamp(280px,34vw,460px)] max-h-[60vh] flex items-center justify-center">
           <FadeIn delay={0.4} y={20}>
             <Magnet
-              padding={120}
-              strength={18}
-              maxDistance={18}
-              activeTransition="transform 0.3s ease-out"
-              inactiveTransition="transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)"
-              className="w-full flex items-center justify-center"
+              padding={100}
+              strength={16}
+              maxDistance={14}
+              activeTransition="transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)"
+              inactiveTransition="transform 0.65s cubic-bezier(0.22, 1, 0.36, 1)"
+              className="w-full flex items-center justify-center relative"
             >
+              {/* Subtle ambient shadow behind avatar */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 scale-90 rounded-full bg-black/60 blur-2xl pointer-events-none -z-10"
+              />
               <img
                 src={aadiAvatar}
                 alt="Aadi Avatar"
-                className="w-full h-auto object-contain pointer-events-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.85)] filter"
+                className="w-full h-auto object-contain pointer-events-none drop-shadow-[0_25px_60px_rgba(0,0,0,0.95)] filter"
                 loading="eager"
               />
             </Magnet>

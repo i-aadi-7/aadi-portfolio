@@ -97,26 +97,24 @@ export const CustomCursor: React.FC = () => {
       scale: isClicking ? 0.8 : 1,
     },
     pointer: {
-      width: 52,
-      height: 52,
-      backgroundColor: 'rgba(182, 0, 168, 0.15)',
-      borderColor: 'rgba(215, 226, 234, 0.8)',
+      width: 48,
+      height: 48,
+      backgroundColor: 'rgba(157, 114, 255, 0.08)',
+      borderColor: 'rgba(215, 226, 234, 0.75)',
       borderWidth: 1.5,
-      scale: isClicking ? 0.9 : 1.15,
-      boxShadow: '0 0 20px rgba(182, 0, 168, 0.4)',
+      scale: isClicking ? 0.9 : 1.1,
     },
     view: {
-      width: 76,
-      height: 76,
-      backgroundColor: 'rgba(12, 12, 12, 0.85)',
-      borderColor: 'rgba(215, 226, 234, 0.9)',
+      width: 72,
+      height: 72,
+      backgroundColor: 'rgba(12, 12, 12, 0.88)',
+      borderColor: 'rgba(215, 226, 234, 0.85)',
       borderWidth: 1.5,
       scale: isClicking ? 0.95 : 1,
-      boxShadow: '0 0 25px rgba(182, 0, 168, 0.35)',
     },
     text: {
-      width: 4,
-      height: 24,
+      width: 3,
+      height: 22,
       borderRadius: 2,
       backgroundColor: 'rgba(215, 226, 234, 0.8)',
       borderColor: 'transparent',
@@ -132,8 +130,8 @@ export const CustomCursor: React.FC = () => {
         animate={ringVariants[cursorType]}
         transition={{
           type: 'spring',
-          damping: 24,
-          stiffness: 320,
+          damping: 26,
+          stiffness: 340,
           mass: 0.3,
         }}
         style={{
@@ -150,9 +148,9 @@ export const CustomCursor: React.FC = () => {
             initial={{ opacity: 0, scale: 0.6 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.6 }}
-            className="text-[10px] font-bold tracking-widest text-[#D7E2EA] uppercase select-none font-['Kanit']"
+            className="text-[10px] font-mono font-semibold tracking-widest text-[#D7E2EA] uppercase select-none"
           >
-            View
+            VIEW
           </motion.span>
         )}
       </motion.div>
@@ -168,14 +166,14 @@ export const CustomCursor: React.FC = () => {
             opacity: isVisible ? 1 : 0,
           }}
           animate={{
-            scale: isClicking ? 1.5 : cursorType === 'pointer' ? 0.6 : cursorType === 'view' ? 0 : 1,
+            scale: isClicking ? 1.4 : cursorType === 'pointer' ? 0.6 : cursorType === 'view' ? 0 : 1,
             backgroundColor:
               cursorType === 'pointer'
-                ? '#B600A8'
+                ? '#9D72FF'
                 : '#D7E2EA',
           }}
           transition={{ duration: 0.15 }}
-          className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(215,226,234,0.8)] transition-opacity duration-200"
+          className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full shadow-[0_0_6px_rgba(215,226,234,0.6)] transition-opacity duration-200"
         />
       )}
     </div>

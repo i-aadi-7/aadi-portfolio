@@ -1,0 +1,280 @@
+{
+  "communities": {
+    "0": [
+      "app",
+      "app_app",
+      "app_footeritemreveal",
+      "app_footerreveal",
+      "app_portfoliocontent",
+      "app_sociallinks",
+      "components_customcursor",
+      "components_customcursor_customcursor",
+      "components_herosection_herosection",
+      "components_pagetransition",
+      "components_pagetransition_pagetransition",
+      "components_pagetransition_pagetransitionprops",
+      "components_pagetransition_particle",
+      "components_projectmodal_projectmodal",
+      "components_scrollprogressbar",
+      "components_scrollprogressbar_scrollprogressbar",
+      "components_sectiontracker",
+      "components_sectiontracker_sections",
+      "components_sectiontracker_sectiontracker",
+      "components_smoothscroll",
+      "components_smoothscroll_smoothscroll",
+      "components_smoothscroll_smoothscroll_raf",
+      "components_smoothscroll_smoothscrollcontext",
+      "components_smoothscroll_smoothscrollcontexttype",
+      "components_smoothscroll_usesmoothscroll",
+      "index",
+      "main",
+      "ref_lenis",
+      "ref_react_dom"
+    ],
+    "1": [
+      "assets_images_browser_frame_3d_1791225077236",
+      "assets_images_chrome_cursor_3d_1791225112999",
+      "assets_images_code_cube_3d_1791225090361",
+      "assets_images_ui_panels_stack_3d_1791225526651",
+      "components_aboutsection",
+      "components_aboutsection_aboutsection",
+      "components_aboutsection_aboutsectionprops",
+      "components_animatedtext",
+      "components_animatedtext_animatedtext",
+      "components_animatedtext_animatedtextprops",
+      "components_animatedtext_character",
+      "components_animatedtext_charprops",
+      "components_fadein",
+      "components_fadein_fadein",
+      "components_fadein_fadeinprops",
+      "components_servicessection",
+      "components_servicessection_serviceitem",
+      "components_servicessection_services",
+      "components_servicessection_servicessection"
+    ],
+    "2": [
+      "components_contactbutton",
+      "components_contactbutton_contactbutton",
+      "components_contactbutton_contactbuttonprops",
+      "components_marqueesection",
+      "components_marqueesection_marqueesection",
+      "components_marqueesection_marqueesectionprops",
+      "components_scrollreveal",
+      "components_scrollreveal_scrollreveal",
+      "components_scrollreveal_scrollrevealprops",
+      "components_ui_scroll_text_marquee",
+      "components_ui_scroll_text_marquee_scrolltextmarquee",
+      "components_ui_scroll_text_marquee_scrolltextmarqueeprops",
+      "lib_utils",
+      "lib_utils_cn",
+      "ref_clsx",
+      "ref_react",
+      "ref_tailwind_merge"
+    ],
+    "3": [
+      "components_liveprojectbutton",
+      "components_liveprojectbutton_liveprojectbutton",
+      "components_liveprojectbutton_liveprojectbuttonprops",
+      "components_projectcard",
+      "components_projectcard_projectcard",
+      "components_projectcard_projectcardprops",
+      "components_projectcard_projectdata",
+      "components_projectmodal",
+      "components_projectmodal_projectmodalprops",
+      "components_projectssection",
+      "components_projectssection_projects",
+      "components_projectssection_projectssection",
+      "components_projectssection_projectssectionprops",
+      "ref_framer_motion",
+      "ref_lucide_react"
+    ],
+    "4": [
+      "utils_soundmanager",
+      "utils_soundmanager_sound",
+      "utils_soundmanager_soundmanager",
+      "utils_soundmanager_soundmanager_constructor",
+      "utils_soundmanager_soundmanager_generatenoisebuffers",
+      "utils_soundmanager_soundmanager_initcontext",
+      "utils_soundmanager_soundmanager_isenabled",
+      "utils_soundmanager_soundmanager_playclick",
+      "utils_soundmanager_soundmanager_playhover",
+      "utils_soundmanager_soundmanager_playopen",
+      "utils_soundmanager_soundmanager_playscrollwhoosh",
+      "utils_soundmanager_soundmanager_setenabled",
+      "utils_soundmanager_soundmanager_setupautounlock",
+      "utils_soundmanager_soundmanager_toggle"
+    ],
+    "5": [
+      "components_contactmodal",
+      "components_contactmodal_available_services",
+      "components_contactmodal_budget_options",
+      "components_contactmodal_contactmodal",
+      "components_contactmodal_contactmodalprops",
+      "components_contactmodal_timeline_options",
+      "components_contactmodal_typewriterheading",
+      "components_contactmodal_typewriterservicelist",
+      "components_contactmodal_wordrevealtext",
+      "components_ui_flow_button",
+      "components_ui_flow_button_flowbutton",
+      "components_ui_flow_button_flowbuttonprops",
+      "components_ui_flow_button_loadingrail"
+    ],
+    "6": [
+      "assets_images_aadi_transparent_avatar",
+      "components_heroparticles",
+      "components_heroparticles_heroparticles",
+      "components_heroparticles_palette",
+      "components_heroparticles_particle",
+      "components_herosection",
+      "components_herosection_herosectionprops",
+      "components_magnet",
+      "components_magnet_magnet",
+      "components_magnet_magnetprops"
+    ]
+  },
+  "cohesion": {
+    "0": 0.11822660098522167,
+    "1": 0.14035087719298245,
+    "2": 0.19852941176470587,
+    "3": 0.23809523809523808,
+    "4": 0.25274725274725274,
+    "5": 0.23076923076923078,
+    "6": 0.24444444444444444
+  },
+  "gods": [
+    {
+      "id": "app_portfoliocontent",
+      "label": "PortfolioContent()",
+      "degree": 14
+    },
+    {
+      "id": "utils_soundmanager_soundmanager",
+      "label": "SoundManager",
+      "degree": 12
+    },
+    {
+      "id": "components_smoothscroll_usesmoothscroll",
+      "label": "useSmoothScroll()",
+      "degree": 9
+    },
+    {
+      "id": "components_fadein_fadein",
+      "label": "FadeIn()",
+      "degree": 9
+    },
+    {
+      "id": "components_herosection_herosection",
+      "label": "HeroSection()",
+      "degree": 8
+    },
+    {
+      "id": "components_contactbutton_contactbutton",
+      "label": "ContactButton()",
+      "degree": 7
+    },
+    {
+      "id": "components_marqueesection_marqueesection",
+      "label": "MarqueeSection()",
+      "degree": 7
+    },
+    {
+      "id": "components_contactmodal_contactmodal",
+      "label": "ContactModal()",
+      "degree": 7
+    },
+    {
+      "id": "components_projectcard_projectdata",
+      "label": "ProjectData",
+      "degree": 6
+    },
+    {
+      "id": "components_aboutsection_aboutsection",
+      "label": "AboutSection()",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "PortfolioContent()",
+      "target": "AboutSection()",
+      "source_files": [
+        "App.tsx",
+        "components/AboutSection.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "PortfolioContent()",
+      "target": "ContactModal()",
+      "source_files": [
+        "App.tsx",
+        "components/ContactModal.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "PortfolioContent()",
+      "target": "MarqueeSection()",
+      "source_files": [
+        "App.tsx",
+        "components/MarqueeSection.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "PortfolioContent()",
+      "target": "ProjectsSection()",
+      "source_files": [
+        "App.tsx",
+        "components/ProjectsSection.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "PortfolioContent()",
+      "target": "ServicesSection()",
+      "source_files": [
+        "App.tsx",
+        "components/ServicesSection.tsx"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `ContactModal()` connect `ContactModal.tsx` to `App.tsx`?",
+      "why": "High betweenness centrality (0.017) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `PortfolioContent()` connect `App.tsx` to `AboutSection.tsx`, `ref_react`, `ref_framer_motion`, `ContactModal.tsx`?",
+      "why": "High betweenness centrality (0.012) - this node is a cross-community bridge."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `PageTransitionProps`, `Particle`, `SmoothScrollContextType` to the rest of the system?",
+      "why": "31 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `App.tsx` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11822660098522167 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `AboutSection.tsx` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.14035087719298245 - nodes in this community are weakly interconnected."
+    }
+  ]
+}

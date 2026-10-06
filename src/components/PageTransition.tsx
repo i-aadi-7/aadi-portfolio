@@ -1,319 +1,490 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-interface PageTransitionProps {
+export interface PageTransitionProps {
+  onComplete?: () => void;
   onLoadingComplete?: () => void;
 }
 
-const PHASES = [
-  'INITIALIZING SYSTEM CORE',
-  'COMPILING WEBGL SHADERS',
-  'STREAMING INTERACTIVE ASSETS',
-  'CALIBRATING VIEWPORT PIPELINE',
-  'STUDIO ENVIRONMENT READY',
-];
+interface Particle {
+  x: number;
+  y: number;
+  originX: number;
+  originY: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  alpha: number;
+  phase: number;
+}
 
-export const PageTransition: React.FC<PageTransitionProps> = ({ onLoadingComplete }) => {
+export const PageTransition: React.FC<PageTransitionProps> = ({
+  onComplete,
+  onLoadingComplete,
+}) => {
   const [progress, setProgress] = useState(0);
+  const [isReady, setIsReady] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const [isDone, setIsDone] = useState(false);
-  const [phaseIndex, setPhaseIndex] = useState(0);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef<{ x: number; y: number; active: boolean }>({
+    x: 0,
+    y: 0,
+    active: false,
+  });
+  const progressRef = useRef(0);
+  const isReadyRef = useRef(false);
+  const animFrameRef = useRef<number | null>(null);
+  const finishTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fast satisfying loading sequence
+  const prefersReducedMotion = useReducedMotion();
+
+  const handleFinish = useCallback(() => {
+    setIsDone(true);
+    onComplete?.();
+    onLoadingComplete?.();
+  }, [onComplete, onLoadingComplete]);
+
+  const scheduleFinish = useCallback((delay: number) => {
+    if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
+    finishTimeoutRef.current = setTimeout(() => {
+      finishTimeoutRef.current = null;
+      handleFinish();
+    }, delay);
+  }, [handleFinish]);
+
+  const handleSkip = useCallback(() => {
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    setIsExiting(true);
+    scheduleFinish(300);
+  }, [scheduleFinish]);
+
   useEffect(() => {
-    const startTime = Date.now();
-    const duration = 1900; // ms
+    return () => {
+      if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
+    };
+  }, []);
 
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const pct = Math.min(100, Math.floor((elapsed / duration) * 100));
-      setProgress(pct);
-
-      const pIndex = Math.min(
-        PHASES.length - 1,
-        Math.floor((pct / 100) * PHASES.length)
-      );
-      setPhaseIndex(pIndex);
-
-      if (pct >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          setIsDone(true);
-          onLoadingComplete?.();
-        }, 320);
+  // ESC key handler for skipping current loader run
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isDone) {
+        handleSkip();
       }
-    }, 25);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDone, handleSkip]);
 
-    return () => clearInterval(interval);
-  }, [onLoadingComplete]);
-
-  // Realtime 3D Wireframe Polyhedron Rotation in Canvas
+  // Deterministic Loading Timeline: ~2200ms - 2450ms
+  // 0-350ms: AADI entrance
+  // 350-1850ms: Progress counts 000 → 100 (1500ms duration)
+  // 1850-2100ms: READY holds (~250ms)
+  // 2100-2450ms: Shutter exit transition
   useEffect(() => {
+    if (prefersReducedMotion) {
+      setProgress(100);
+      progressRef.current = 100;
+      setIsReady(true);
+      isReadyRef.current = true;
+      const timer = setTimeout(() => {
+        setIsExiting(true);
+        scheduleFinish(300);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+
+    const START_DELAY = 350; // ms before count starts
+    const COUNT_DURATION = 1500; // ms to count from 0 to 100
+    const READY_HOLD = 250; // ms to hold READY
+    const TOTAL_BEFORE_EXIT = START_DELAY + COUNT_DURATION + READY_HOLD; // ~2100ms
+
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+
+      if (elapsed < START_DELAY) {
+        setProgress(0);
+        progressRef.current = 0;
+      } else if (elapsed < START_DELAY + COUNT_DURATION) {
+        const countElapsed = elapsed - START_DELAY;
+        const rawProgress = countElapsed / COUNT_DURATION;
+        const currentPct = Math.min(100, Math.floor(rawProgress * 100));
+        setProgress(currentPct);
+        progressRef.current = currentPct;
+      } else {
+        setProgress(100);
+        progressRef.current = 100;
+        if (!isReadyRef.current) {
+          setIsReady(true);
+          isReadyRef.current = true;
+        }
+      }
+
+      if (elapsed < TOTAL_BEFORE_EXIT) {
+        animFrameRef.current = requestAnimationFrame(tick);
+      } else {
+        setIsExiting(true);
+        scheduleFinish(350);
+      }
+    };
+
+    animFrameRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [prefersReducedMotion, scheduleFinish]);
+
+  // Track mouse coordinates for subtle local particle displacement
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    mouseRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      active: true,
+    };
+  };
+
+  const handleMouseLeave = () => {
+    mouseRef.current.active = false;
+  };
+
+  // Canvas 2D Particle Displacement Field
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animId: number;
-    let angleX = 0;
-    let angleY = 0;
-    let angleZ = 0;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
 
-    // 3D Octahedron vertices [x, y, z]
-    const size = 52;
-    const vertices = [
-      [0, -size * 1.25, 0],
-      [0, size * 1.25, 0],
-      [-size, 0, -size],
-      [size, 0, -size],
-      [size, 0, size],
-      [-size, 0, size],
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const isMobile = width < 768;
+    const particleCount = isMobile ? 32 : 72;
+
+    const particles: Particle[] = [];
+    const colors = [
+      'rgba(215, 226, 234, ', // 88% Silver/Graphite
+      'rgba(215, 226, 234, ',
+      'rgba(215, 226, 234, ',
+      'rgba(215, 226, 234, ',
+      'rgba(215, 226, 234, ',
+      'rgba(215, 226, 234, ',
+      'rgba(215, 226, 234, ',
+      'rgba(215, 226, 234, ',
+      'rgba(157, 114, 255, ', // 6% Muted Violet
+      'rgba(100, 210, 255, ', // 6% Muted Cyan
     ];
 
-    // Edges connecting vertices
-    const edges = [
-      [0, 2], [0, 3], [0, 4], [0, 5], // Top pyramid
-      [1, 2], [1, 3], [1, 4], [1, 5], // Bottom pyramid
-      [2, 3], [3, 4], [4, 5], [5, 2], // Equatorial ring
-    ];
+    // Distribute particles with clear immediate visibility
+    for (let i = 0; i < particleCount; i++) {
+      const x = Math.random() * width;
+      const y = Math.random() * height;
+      particles.push({
+        x,
+        y,
+        originX: x,
+        originY: y,
+        vx: 0,
+        vy: 0,
+        size: Math.random() < 0.8 ? 1.3 : 2.2,
+        color: colors[i % colors.length],
+        alpha: 0.22 + Math.random() * 0.25,
+        phase: Math.random() * Math.PI * 2,
+      });
+    }
 
-    // Inner orbiting core cube
-    const innerSize = 22;
-    const innerVertices = [
-      [-innerSize, -innerSize, -innerSize],
-      [innerSize, -innerSize, -innerSize],
-      [innerSize, innerSize, -innerSize],
-      [-innerSize, innerSize, -innerSize],
-      [-innerSize, -innerSize, innerSize],
-      [innerSize, -innerSize, innerSize],
-      [innerSize, innerSize, innerSize],
-      [-innerSize, innerSize, innerSize],
-    ];
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
 
-    const innerEdges = [
-      [0, 1], [1, 2], [2, 3], [3, 0],
-      [4, 5], [5, 6], [6, 7], [7, 4],
-      [0, 4], [1, 5], [2, 6], [3, 7],
-    ];
+    window.addEventListener('resize', handleResize);
+
+    let time = 0;
 
     const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+      ctx.clearRect(0, 0, width, height);
+      time += 0.015;
 
-      angleX += 0.018;
-      angleY += 0.024;
-      angleZ += 0.012;
+      const currentProgress = progressRef.current;
+      const readyState = isReadyRef.current;
+      const cx = width / 2;
+      const cy = height / 2;
 
-      const cosX = Math.cos(angleX), sinX = Math.sin(angleX);
-      const cosY = Math.cos(angleY), sinY = Math.sin(angleY);
-      const cosZ = Math.cos(angleZ), sinZ = Math.sin(angleZ);
+      // Text displacement elliptical zone
+      const textRadiusX = isMobile ? 120 : 170;
+      const textRadiusY = isMobile ? 65 : 85;
 
-      const project = (x: number, y: number, z: number) => {
-        // Rotate Y
-        let x1 = x * cosY + z * sinY;
-        let y1 = y;
-        let z1 = -x * sinY + z * cosY;
+      // Progressive displacement force
+      let forceStrength = 0.45;
+      if (currentProgress >= 30 && currentProgress < 75) {
+        forceStrength = 0.45 + ((currentProgress - 30) / 45) * 0.6;
+      } else if (currentProgress >= 75) {
+        forceStrength = 1.05 - ((currentProgress - 75) / 25) * 0.35;
+      }
 
-        // Rotate X
-        let x2 = x1;
-        let y2 = y1 * cosX - z1 * sinX;
-        let z2 = y1 * sinX + z1 * cosX;
+      if (readyState) {
+        forceStrength = 0.3;
+      }
 
-        // Rotate Z
-        let x3 = x2 * cosZ - y2 * sinZ;
-        let y3 = x2 * sinZ + y2 * cosZ;
-        let z3 = z2;
+      // Update and draw particles
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
 
-        const fov = 260;
-        const scale = fov / (fov + z3 + 180);
-        return {
-          px: cx + x3 * scale,
-          py: cy + y3 * scale,
-          scale,
-        };
-      };
+        // 1. Ambient architectural drift
+        const driftX = Math.cos(time + p.phase) * (0.45 + (currentProgress / 100) * 0.45);
+        const driftY = Math.sin(time + p.phase) * (0.45 + (currentProgress / 100) * 0.45);
 
-      // 1. Draw outer rotating octahedron
-      const projected = vertices.map((v) => project(v[0], v[1], v[2]));
+        let targetX = p.originX + driftX;
+        let targetY = p.originY + driftY;
 
-      ctx.lineWidth = 1.2;
-      ctx.strokeStyle = 'rgba(187, 204, 215, 0.45)';
+        // 2. Repulsion from Typography Box
+        const dx = p.x - cx;
+        const dy = p.y - cy;
+        const normalizedDist = Math.sqrt(
+          (dx * dx) / (textRadiusX * textRadiusX) + (dy * dy) / (textRadiusY * textRadiusY)
+        );
 
-      edges.forEach(([i, j]) => {
+        if (normalizedDist < 1.0) {
+          const repelFactor = (1.0 - normalizedDist) * 58 * forceStrength;
+          const angle = Math.atan2(dy, dx);
+          targetX += Math.cos(angle) * repelFactor;
+          targetY += Math.sin(angle) * repelFactor;
+        }
+
+        // 3. Subtle Mouse Interaction
+        if (mouseRef.current.active) {
+          const mdx = p.x - mouseRef.current.x;
+          const mdy = p.y - mouseRef.current.y;
+          const mouseDist = Math.sqrt(mdx * mdx + mdy * mdy);
+          const mouseRadius = 90;
+
+          if (mouseDist < mouseRadius && mouseDist > 0) {
+            const mouseRepel = (1 - mouseDist / mouseRadius) * 22;
+            targetX += (mdx / mouseDist) * mouseRepel;
+            targetY += (mdy / mouseDist) * mouseRepel;
+          }
+        }
+
+        // Smooth spring dynamics
+        const spring = 0.055;
+        const damping = 0.88;
+        p.vx = (p.vx + (targetX - p.x) * spring) * damping;
+        p.vy = (p.vy + (targetY - p.y) * spring) * damping;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Draw particle point
         ctx.beginPath();
-        ctx.moveTo(projected[i].px, projected[i].py);
-        ctx.lineTo(projected[j].px, projected[j].py);
-        ctx.stroke();
-      });
-
-      // Vertices nodes
-      projected.forEach((p) => {
-        ctx.fillStyle = '#B600A8';
-        ctx.beginPath();
-        ctx.arc(p.px, p.py, 2.5 * p.scale, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color}${p.alpha})`;
         ctx.fill();
-      });
+      }
 
-      // 2. Draw counter-rotating inner core cube
-      const innerCosX = Math.cos(-angleX * 1.4);
-      const innerSinX = Math.sin(-angleX * 1.4);
-      const innerCosY = Math.cos(-angleY * 1.4);
-      const innerSinY = Math.sin(-angleY * 1.4);
+      // Draw faint proximity lattice lines
+      const maxConnectDist = isMobile ? 42 : 55;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const p1 = particles[i];
+          const p2 = particles[j];
+          const cdx = p1.x - p2.x;
+          const cdy = p1.y - p2.y;
+          const dist = Math.sqrt(cdx * cdx + cdy * cdy);
 
-      const projectInner = (x: number, y: number, z: number) => {
-        let x1 = x * innerCosY + z * innerSinY;
-        let y1 = y;
-        let z1 = -x * innerSinY + z * innerCosY;
-        let x2 = x1;
-        let y2 = y1 * innerCosX - z1 * innerSinX;
-        let z2 = y1 * innerSinX + z1 * innerCosX;
-        const fov = 260;
-        const scale = fov / (fov + z2 + 180);
-        return {
-          px: cx + x2 * scale,
-          py: cy + y2 * scale,
-        };
-      };
-
-      const innerProjected = innerVertices.map((v) =>
-        projectInner(v[0], v[1], v[2])
-      );
-
-      ctx.lineWidth = 0.8;
-      ctx.strokeStyle = 'rgba(182, 0, 168, 0.7)';
-      innerEdges.forEach(([i, j]) => {
-        ctx.beginPath();
-        ctx.moveTo(innerProjected[i].px, innerProjected[i].py);
-        ctx.lineTo(innerProjected[j].px, innerProjected[j].py);
-        ctx.stroke();
-      });
+          if (dist < maxConnectDist) {
+            const lineAlpha = (1 - dist / maxConnectDist) * 0.08;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(215, 226, 234, ${lineAlpha})`;
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+      }
 
       animId = requestAnimationFrame(render);
     };
 
     render();
 
-    return () => cancelAnimationFrame(animId);
-  }, []);
-
-  const handleSkip = () => {
-    setIsDone(true);
-    onLoadingComplete?.();
-  };
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [prefersReducedMotion]);
 
   return (
     <AnimatePresence>
       {!isDone && (
-        <div className="fixed inset-0 z-[999999] pointer-events-auto select-none overflow-hidden">
-          {/* 5 Staggered Architectural Shutter Panels for Cinematic Curtain Reveal */}
-          <div className="absolute inset-0 flex flex-row pointer-events-none">
-            {[0, 1, 2, 3, 4].map((colIndex) => (
-              <motion.div
-                key={`shutter-${colIndex}`}
-                initial={{ y: '0%' }}
-                exit={{
-                  y: '-100%',
-                  transition: {
-                    duration: 0.8,
-                    delay: colIndex * 0.05,
-                    ease: [0.85, 0, 0.15, 1], // Architectural cubic bezier sweep
-                  },
-                }}
-                className="flex-1 h-full bg-[#0C0C0C] border-r border-white/[0.04] last:border-r-0 relative"
-              />
-            ))}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-label="Loading portfolio"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className="fixed inset-0 z-[999999] pointer-events-auto select-none overflow-hidden bg-[#0C0C0C]"
+        >
+          {/* Top & Bottom Shutter Panels for Cinematic Split Reveal */}
+          <div className="absolute inset-0 flex flex-col pointer-events-none z-0">
+            <motion.div
+              key="shutter-top"
+              initial={{ y: '0%' }}
+              animate={{ y: isExiting ? '-100%' : '0%' }}
+              exit={{
+                y: '-100%',
+              }}
+              transition={{
+                duration: 0.7,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="flex-1 w-full bg-[#0C0C0C] border-b border-white/[0.04]"
+            />
+            <motion.div
+              key="shutter-bottom"
+              initial={{ y: '0%' }}
+              animate={{ y: isExiting ? '100%' : '0%' }}
+              exit={{
+                y: '100%',
+              }}
+              transition={{
+                duration: 0.7,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className="flex-1 w-full bg-[#0C0C0C]"
+            />
           </div>
 
-          {/* Loader Foreground Interface */}
+          {/* Interactive Particle Displacement Canvas */}
+          {!prefersReducedMotion && (
+            <motion.canvas
+              ref={canvasRef}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isExiting ? 0 : 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 pointer-events-none z-10"
+            />
+          )}
+
+          {/* Loader Foreground Content */}
           <motion.div
             initial={{ opacity: 1 }}
+            animate={{
+              opacity: isExiting ? 0 : 1,
+              y: isExiting ? -8 : 0,
+            }}
             exit={{
               opacity: 0,
-              transition: { duration: 0.25 },
+              y: -8,
             }}
-            className="absolute inset-0 flex flex-col justify-between p-6 sm:p-10 md:p-14 z-10"
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-0 flex flex-col justify-between p-6 sm:p-10 md:p-12 z-20"
           >
-            {/* Top Telemetry Header */}
-            <div className="flex items-center justify-between text-[#D7E2EA]/60 text-xs uppercase tracking-widest font-mono">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="font-semibold text-white">AADI STUDIO V1.0</span>
-                <span className="hidden sm:inline text-white/30">|</span>
-                <span className="hidden sm:inline text-white/40">
-                  WEB DESIGN / DEVELOPMENT / INTERACTIVE EXPERIENCES
-                </span>
-              </div>
+            {/* Top Bar: Minimal Right-aligned SKIP [ESC] */}
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={handleSkip}
+                className="text-[11px] font-mono tracking-widest text-[#D7E2EA]/40 hover:text-white transition-colors cursor-pointer bg-transparent border-0 outline-none focus-visible:ring-1 focus-visible:ring-white/40 rounded px-1.5 py-0.5"
+                aria-label="Skip intro animation"
+              >
+                SKIP [ESC]
+              </button>
+            </div>
 
-              <div className="flex items-center gap-4">
-                <span className="hidden sm:inline text-[#D7E2EA]/40 text-[11px]">
-                  FPS 60 · OCTANE RENDER
-                </span>
-                <button
-                  onClick={handleSkip}
-                  className="px-3 py-1 rounded-full border border-white/20 text-[10px] text-white/70 hover:text-white hover:border-white transition-colors cursor-pointer"
+            {/* Center Editorial Branding & Progress */}
+            <div className="flex flex-col items-center justify-center my-auto text-center px-4 max-w-xl mx-auto">
+              {/* 1. Studio Monogram Name */}
+              <div className="flex items-center justify-center gap-2">
+                <motion.h1
+                  initial={
+                    prefersReducedMotion
+                      ? { opacity: 1 }
+                      : { opacity: 0, filter: 'blur(8px)', y: 8 }
+                  }
+                  animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
+                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                  className="font-black text-4xl sm:text-5xl md:text-6xl uppercase tracking-[0.18em] text-[#F3F4F6] leading-none select-none pl-[0.18em]"
                 >
-                  SKIP [ESC]
-                </button>
-              </div>
-            </div>
+                  Aadi
+                </motion.h1>
 
-            {/* Central 3D Polyhedron & Typography Core */}
-            <div className="flex flex-col items-center justify-center my-auto relative">
-              {/* Rotating Wireframe 3D Canvas */}
-              <div className="relative mb-6">
-                <canvas
-                  ref={canvasRef}
-                  width={220}
-                  height={220}
-                  className="w-[180px] h-[180px] sm:w-[220px] sm:h-[220px]"
+                {/* 4px Muted Violet Accent Dot */}
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                  className="w-1 h-1 rounded-full bg-[#9D72FF]/90 shrink-0 self-center"
+                  aria-hidden="true"
                 />
-                {/* Crosshair accents */}
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-3 h-[1px] bg-[#BBCCD7]/30" />
-                <div className="absolute top-1/2 right-0 -translate-y-1/2 w-3 h-[1px] bg-[#BBCCD7]/30" />
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-3 w-[1px] bg-[#BBCCD7]/30" />
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-3 w-[1px] bg-[#BBCCD7]/30" />
               </div>
 
-              {/* Monogram Name */}
-              <h2 className="hero-heading font-black text-4xl sm:text-6xl md:text-7xl uppercase tracking-tight leading-none text-center">
-                Aadi
-              </h2>
+              {/* 2. Supporting Identity Line */}
+              <motion.p
+                initial={
+                  prefersReducedMotion
+                    ? { opacity: 0.55 }
+                    : { opacity: 0, letterSpacing: '0.28em' }
+                }
+                animate={{ opacity: 0.55, letterSpacing: '0.22em' }}
+                transition={{ delay: 0.15, duration: 0.6, ease: 'easeOut' }}
+                className="text-[10px] sm:text-[11px] font-mono text-[#D7E2EA] uppercase tracking-[0.22em] mt-4 leading-relaxed max-w-md"
+              >
+                WEB DESIGN / DEVELOPMENT / INTERACTIVE EXPERIENCES
+              </motion.p>
 
-              {/* Dynamic Status Phase */}
-              <div className="h-6 flex items-center justify-center mt-3">
-                <p className="text-[#D7E2EA]/70 text-[11px] sm:text-xs font-mono tracking-[0.25em] uppercase text-center transition-all duration-300">
-                  {PHASES[phaseIndex]}
-                </p>
-              </div>
+              {/* 3. Thin Progress Line & 3-Digit Tracker */}
+              <div className="w-48 sm:w-60 mt-8 flex flex-col items-center gap-2">
+                {/* Thin Progress Track */}
+                <div className="w-full h-[1px] bg-white/[0.08] relative overflow-hidden">
+                  <motion.div
+                    className="h-full bg-[#D7E2EA] relative"
+                    style={{
+                      width: `${progress}%`,
+                    }}
+                  >
+                    {/* Tiny violet endpoint accent */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#9D72FF]" />
+                  </motion.div>
+                </div>
 
-              {/* Giant Numerical Percentage Counter */}
-              <div className="mt-4 font-mono font-light flex items-baseline">
-                <span className="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#BBCCD7] via-[#B600A8] to-[#BE4C00] tracking-tighter">
+                {/* 3-Digit Progress Number (000 → 100) */}
+                <div className="font-mono text-[11px] text-[#D7E2EA]/60 tracking-wider tabular-nums">
                   {String(progress).padStart(3, '0')}
-                </span>
-                <span className="text-[#D7E2EA]/40 font-normal text-xl sm:text-2xl ml-1">%</span>
-              </div>
+                </div>
 
-              {/* Precision Segmented Progress Bar */}
-              <div className="w-56 sm:w-80 h-[2px] bg-neutral-900 rounded-full mt-5 overflow-hidden relative border border-white/5">
-                <motion.div
-                  className="h-full"
-                  style={{
-                    width: `${progress}%`,
-                    background:
-                      'linear-gradient(90deg, #646973 0%, #BBCCD7 25%, #7621B0 55%, #B600A8 85%, #BE4C00 100%)',
-                    boxShadow: '0 0 14px rgba(182, 0, 168, 0.8)',
-                  }}
-                />
+                {/* Status Micro-label (INITIALIZING → READY) */}
+                <div className="font-mono text-[9px] tracking-[0.2em] uppercase text-[#D7E2EA]/40">
+                  {isReady ? (
+                    <span className="text-[#9D72FF] font-medium">READY</span>
+                  ) : (
+                    <span>INITIALIZING</span>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Bottom Viewport Metadata */}
-            <div className="flex items-center justify-between text-[#D7E2EA]/40 text-[10px] sm:text-[11px] font-mono uppercase tracking-wider">
-              <span>FOCAL: 50MM F/1.4</span>
-              <span className="hidden sm:inline">COORDINATES: 37.7749° N, 122.4194° W</span>
-              <span>RENDER BUFFER: 100% READY</span>
+            {/* Bottom Bar: Left-aligned Metadata */}
+            <div className="flex items-center justify-between text-[#D7E2EA]/30 text-[10px] font-mono tracking-widest uppercase">
+              <span>PORTFOLIO / 2026</span>
+              <span className="invisible pointer-events-none">SPACER</span>
             </div>
           </motion.div>
         </div>

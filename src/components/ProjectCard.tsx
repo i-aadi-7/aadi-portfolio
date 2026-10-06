@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useReducedMotion } from 'framer-motion';
 import { LiveProjectButton } from './LiveProjectButton';
-import { LayoutDashboard, Users, GitBranch, ArrowUpRight, ShieldCheck, Sparkles, BarChart3, Clock, Zap } from 'lucide-react';
+import { LayoutDashboard, Users, GitBranch, ArrowUpRight, Sparkles, Clock } from 'lucide-react';
 
 export interface ProjectData {
   number: string;
@@ -27,7 +27,42 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onLiveProjectClick,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const [isInView, setIsInView] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
+
+  // Mouse tilt tracking (max ±1.5deg)
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 25, stiffness: 200, mass: 0.5 };
+  const smoothMouseX = useSpring(mouseX, springConfig);
+  const smoothMouseY = useSpring(mouseY, springConfig);
+
+  const rotateY = useTransform(smoothMouseX, [-300, 300], [-1.5, 1.5]);
+  const rotateX = useTransform(smoothMouseY, [-300, 300], [1.5, -1.5]);
+
+  // Subtle multi-plane parallax depth for UI frames
+  const frame1X = useTransform(smoothMouseX, [-300, 300], [-3, 3]);
+  const frame1Y = useTransform(smoothMouseY, [-300, 300], [-2, 2]);
+
+  const frame2X = useTransform(smoothMouseX, [-300, 300], [3, -3]);
+  const frame2Y = useTransform(smoothMouseY, [-300, 300], [2, -2]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion) return;
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    mouseX.set(e.clientX - centerX);
+    mouseY.set(e.clientY - centerY);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   // Parallax subtle scale & y-shift on scroll
   const { scrollYProgress } = useScroll({
@@ -36,7 +71,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   });
 
   const cardScale = useTransform(scrollYProgress, [0, 0.4, 0.8, 1], [0.97, 1, 1, 0.98]);
-  const yParallaxDetail = useTransform(scrollYProgress, [0, 1], [15, -15]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -63,9 +97,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   return (
     <div
       ref={containerRef}
-      className="w-full flex items-start justify-center pt-2 sm:pt-4"
+      className="w-full flex items-start justify-center pt-2 sm:pt-4 [perspective:1200px]"
     >
       <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         initial={{ opacity: 0, y: 40 }}
         animate={
           isInView
@@ -74,20 +111,23 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         }
         transition={{
           duration: 0.85,
-          ease: [0.21, 0.47, 0.32, 0.98],
+          ease: [0.22, 1, 0.36, 1],
         }}
         style={{
           scale: cardScale,
+          rotateX: prefersReducedMotion ? 0 : rotateX,
+          rotateY: prefersReducedMotion ? 0 : rotateY,
           transformOrigin: 'center center',
+          transformStyle: 'preserve-3d',
         }}
-        className="w-full max-w-6xl mx-auto rounded-[36px] sm:rounded-[48px] md:rounded-[60px] border-2 border-[#D7E2EA] bg-[#0C0C0C] p-5 sm:p-7 md:p-10 flex flex-col justify-between shadow-[0_30px_70px_rgba(0,0,0,0.95)] will-change-transform"
+        className="w-full max-w-6xl mx-auto rounded-[36px] sm:rounded-[48px] md:rounded-[60px] border-2 border-[#D7E2EA]/35 hover:border-[#D7E2EA] transition-colors duration-500 bg-[#0C0C0C] p-5 sm:p-7 md:p-10 flex flex-col justify-between shadow-[0_30px_70px_rgba(0,0,0,0.95)] will-change-transform"
       >
         {/* Top Area: Header with Number, Category/Label, Name and CTA */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-6 sm:pb-8 border-b border-[#D7E2EA]/20">
           <div className="flex items-center gap-4 sm:gap-6 md:gap-8 flex-wrap">
             {/* Number */}
             <span
-              className="font-black text-[#D7E2EA] leading-none select-none tracking-tight"
+              className="font-black text-[#D7E2EA] leading-none select-none tracking-tight tabular-nums"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)' }}
             >
               {project.number}
@@ -134,13 +174,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </div>
         )}
 
-        {/* Main Visual Area: 3 Intentional Dark UI Wireframe / Mockup Frames */}
+        {/* Main Visual Area: 3 Intentional Dark UI Wireframe / Mockup Frames with Depth */}
         <div className="grid grid-cols-12 gap-4 sm:gap-5 md:gap-6 my-2">
-          {/* Frame 1: Large Desktop Dashboard Frame (7 cols desktop, full width mobile) */}
-          <div
+          {/* Frame 1: Large Desktop Dashboard Frame */}
+          <motion.div
             data-cursor="view"
+            style={{
+              x: prefersReducedMotion ? 0 : frame1X,
+              y: prefersReducedMotion ? 0 : frame1Y,
+            }}
             onClick={() => onLiveProjectClick(project)}
-            className="col-span-12 lg:col-span-7 rounded-[24px] sm:rounded-[32px] md:rounded-[40px] overflow-hidden bg-neutral-950 border border-neutral-800 p-4 sm:p-6 flex flex-col justify-between group relative cursor-pointer min-h-[300px] sm:min-h-[360px] md:min-h-[420px] transition-colors duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
+            className="col-span-12 lg:col-span-7 rounded-[24px] sm:rounded-[32px] md:rounded-[40px] overflow-hidden bg-neutral-950 border border-neutral-800 p-4 sm:p-6 flex flex-col justify-between group relative cursor-pointer min-h-[300px] sm:min-h-[360px] md:min-h-[420px] transition-all duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
           >
             {/* Window titlebar mockup */}
             <div className="flex items-center justify-between pb-3 border-b border-neutral-800/80 text-xs">
@@ -213,15 +257,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 SYSTEM ONLINE
               </span>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right Column: 2 Mockup Panels (5 cols desktop, full width mobile) */}
+          {/* Right Column: 2 Mockup Panels */}
           <div className="col-span-12 lg:col-span-5 flex flex-col gap-4 sm:gap-5 md:gap-6">
             {/* Frame 2: Smaller Narrow Panel / Lead Workspace */}
-            <div
+            <motion.div
               data-cursor="view"
+              style={{
+                x: prefersReducedMotion ? 0 : frame2X,
+                y: prefersReducedMotion ? 0 : frame2Y,
+              }}
               onClick={() => onLiveProjectClick(project)}
-              className="rounded-[24px] sm:rounded-[32px] md:rounded-[40px] bg-neutral-950 border border-neutral-800 p-4 sm:p-5 flex flex-col justify-between group relative cursor-pointer min-h-[190px] sm:min-h-[210px] transition-colors duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
+              className="rounded-[24px] sm:rounded-[32px] md:rounded-[40px] bg-neutral-950 border border-neutral-800 p-4 sm:p-5 flex flex-col justify-between group relative cursor-pointer min-h-[190px] sm:min-h-[210px] transition-all duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
             >
               <div className="flex items-center justify-between pb-2.5 border-b border-neutral-800/80 text-xs">
                 <div className="flex items-center gap-1.5 font-mono text-[10px] text-neutral-400 uppercase tracking-wider">
@@ -254,14 +302,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 <span>STAGE: ENGAGED</span>
                 <span>AUTO-SYNC ACTIVE</span>
               </div>
-            </div>
+            </motion.div>
 
             {/* Frame 3: Small UI Detail Frame / Pipeline Detail */}
             <motion.div
               data-cursor="view"
-              style={{ y: yParallaxDetail }}
               onClick={() => onLiveProjectClick(project)}
-              className="rounded-[24px] sm:rounded-[32px] md:rounded-[40px] bg-neutral-950 border border-neutral-800 p-4 sm:p-5 flex flex-col justify-between group relative cursor-pointer min-h-[160px] sm:min-h-[180px] transition-colors duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
+              className="rounded-[24px] sm:rounded-[32px] md:rounded-[40px] bg-neutral-950 border border-neutral-800 p-4 sm:p-5 flex flex-col justify-between group relative cursor-pointer min-h-[160px] sm:min-h-[180px] transition-all duration-300 hover:border-neutral-700 hover:bg-neutral-900/60"
             >
               <div className="flex items-center justify-between pb-2 border-b border-neutral-800/80 text-xs">
                 <div className="flex items-center gap-1.5 font-mono text-[10px] text-neutral-400 uppercase tracking-wider">

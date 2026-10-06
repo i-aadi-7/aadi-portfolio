@@ -8,8 +8,8 @@ import {
   useAnimationFrame,
   useMotionValue,
   useReducedMotion,
+  wrap,
 } from 'framer-motion';
-import { wrap } from '@motionone/utils';
 import { cn } from '@/src/lib/utils';
 
 export interface ScrollTextMarqueeProps {

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'framer-motion';
 import { FadeIn } from './FadeIn';
 import { AnimatedText } from './AnimatedText';
 import { ContactButton } from './ContactButton';
@@ -12,16 +13,72 @@ interface AboutSectionProps {
 }
 
 export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) => {
+  const sectionRef = useRef<HTMLElement>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  // Gentle mouse coordinate tracking for subtle multi-plane 3D object parallax
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { damping: 30, stiffness: 200, mass: 0.5 };
+  const smoothMouseX = useSpring(mouseX, springConfig);
+  const smoothMouseY = useSpring(mouseY, springConfig);
+
+  // Discrete parallax depth multipliers for each corner object (max ±4px to ±6px)
+  const obj1X = useTransform(smoothMouseX, [-500, 500], [-6, 6]);
+  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-5, 5]);
+
+  const obj2X = useTransform(smoothMouseX, [-500, 500], [5, -5]);
+  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-4, 4]);
+
+  const obj3X = useTransform(smoothMouseX, [-500, 500], [-4, 4]);
+  const obj3Y = useTransform(smoothMouseY, [-500, 500], [6, -6]);
+
+  const obj4X = useTransform(smoothMouseX, [-500, 500], [6, -6]);
+  const obj4Y = useTransform(smoothMouseY, [-500, 500], [5, -5]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (prefersReducedMotion) return;
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    mouseX.set(e.clientX - centerX);
+    mouseY.set(e.clientY - centerY);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
   return (
     <section
+      ref={sectionRef}
       id="about"
-      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-8 md:px-10 py-20 overflow-hidden bg-[#0C0C0C]"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-8 md:px-10 py-24 sm:py-28 md:py-36 overflow-hidden bg-[#0C0C0C]"
     >
-      {/* 4 Creative-Tech Decorative 3D Corner Elements */}
+      {/* Background Architectural Grid Fragment */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none opacity-[0.03] z-0"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, #FFFFFF 1px, transparent 1px), linear-gradient(to bottom, #FFFFFF 1px, transparent 1px)',
+          backgroundSize: '80px 80px',
+        }}
+      />
+
+      {/* 4 Creative-Tech Decorative 3D Corner Elements with Controlled Parallax */}
 
       {/* Top-left: 3D browser window / floating website frame */}
-      <div className="absolute top-[4%] left-[1%] sm:left-[2%] md:left-[4%] pointer-events-none z-0">
-        <FadeIn delay={0.1} x={-80} y={0} duration={0.9}>
+      <motion.div
+        style={{ x: prefersReducedMotion ? 0 : obj1X, y: prefersReducedMotion ? 0 : obj1Y }}
+        className="absolute top-[8%] left-[1%] sm:left-[2%] md:left-[4%] pointer-events-none z-0"
+      >
+        <FadeIn delay={0.1} x={-60} y={0} duration={0.85}>
           <img
             src={browserFrameImg}
             alt="3D Floating Browser Window"
@@ -30,11 +87,14 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             loading="lazy"
           />
         </FadeIn>
-      </div>
+      </motion.div>
 
       {/* Bottom-left: Stack of floating mini website / UI panels */}
-      <div className="absolute bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%] pointer-events-none z-0">
-        <FadeIn delay={0.25} x={-80} y={0} duration={0.9}>
+      <motion.div
+        style={{ x: prefersReducedMotion ? 0 : obj2X, y: prefersReducedMotion ? 0 : obj2Y }}
+        className="absolute bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%] pointer-events-none z-0"
+      >
+        <FadeIn delay={0.25} x={-60} y={0} duration={0.85}>
           <img
             src={uiPanelsStackImg}
             alt="3D Layered UI Panels Stack"
@@ -42,11 +102,14 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             loading="lazy"
           />
         </FadeIn>
-      </div>
+      </motion.div>
 
       {/* Top-right: 3D code brackets developer cube */}
-      <div className="absolute top-[4%] right-[1%] sm:right-[2%] md:right-[4%] pointer-events-none z-0">
-        <FadeIn delay={0.15} x={80} y={0} duration={0.9}>
+      <motion.div
+        style={{ x: prefersReducedMotion ? 0 : obj3X, y: prefersReducedMotion ? 0 : obj3Y }}
+        className="absolute top-[8%] right-[1%] sm:right-[2%] md:right-[4%] pointer-events-none z-0"
+      >
+        <FadeIn delay={0.15} x={60} y={0} duration={0.85}>
           <img
             src={codeCubeImg}
             alt="3D Code Brackets Cube"
@@ -54,11 +117,14 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             loading="lazy"
           />
         </FadeIn>
-      </div>
+      </motion.div>
 
       {/* Bottom-right: Stylized 3D chrome cursor pointer */}
-      <div className="absolute bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%] pointer-events-none z-0">
-        <FadeIn delay={0.3} x={80} y={0} duration={0.9}>
+      <motion.div
+        style={{ x: prefersReducedMotion ? 0 : obj4X, y: prefersReducedMotion ? 0 : obj4Y }}
+        className="absolute bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%] pointer-events-none z-0"
+      >
+        <FadeIn delay={0.3} x={60} y={0} duration={0.85}>
           <img
             src={chromeCursorImg}
             alt="3D Liquid Chrome Cursor"
@@ -66,12 +132,12 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             loading="lazy"
           />
         </FadeIn>
-      </div>
+      </motion.div>
 
       {/* Central Content */}
       <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto w-full">
         {/* Heading */}
-        <FadeIn delay={0} y={40} className="w-full">
+        <FadeIn delay={0} y={35} className="w-full">
           <h2
             className="hero-heading font-black uppercase leading-none tracking-tight text-center w-full"
             style={{ fontSize: 'clamp(3rem, 12vw, 160px)' }}
