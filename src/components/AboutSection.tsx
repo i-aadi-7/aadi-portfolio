@@ -81,7 +81,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         <FadeIn delay={0.1} x={-60} y={0} duration={0.85}>
           <img
             src={browserFrameImg}
-            alt="3D Floating Browser Window"
+            alt=""
+            aria-hidden="true"
             style={{ filter: 'brightness(1.14) contrast(1.12)' }}
             className="w-[135px] sm:w-[180px] md:w-[235px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
             loading="lazy"
@@ -97,7 +98,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         <FadeIn delay={0.25} x={-60} y={0} duration={0.85}>
           <img
             src={uiPanelsStackImg}
-            alt="3D Layered UI Panels Stack"
+            alt=""
+            aria-hidden="true"
             className="w-[105px] sm:w-[145px] md:w-[185px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
             loading="lazy"
           />
@@ -112,7 +114,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         <FadeIn delay={0.15} x={60} y={0} duration={0.85}>
           <img
             src={codeCubeImg}
-            alt="3D Code Brackets Cube"
+            alt=""
+            aria-hidden="true"
             className="w-[120px] sm:w-[160px] md:w-[210px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
             loading="lazy"
           />
@@ -127,7 +130,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         <FadeIn delay={0.3} x={60} y={0} duration={0.85}>
           <img
             src={chromeCursorImg}
-            alt="3D Liquid Chrome Cursor"
+            alt=""
+            aria-hidden="true"
             className="w-[120px] sm:w-[160px] md:w-[200px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
             loading="lazy"
           />

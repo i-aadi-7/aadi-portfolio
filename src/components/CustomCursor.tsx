@@ -124,7 +124,10 @@ export const CustomCursor: React.FC = () => {
   };
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[99999] overflow-hidden">
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed inset-0 z-[99999] overflow-hidden"
+    >
       {/* Outer morphing ring */}
       <motion.div
         animate={ringVariants[cursorType]}

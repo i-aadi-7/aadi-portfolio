@@ -375,6 +375,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
           {!prefersReducedMotion && (
             <motion.canvas
               ref={canvasRef}
+              aria-hidden="true"
               initial={{ opacity: 0 }}
               animate={{ opacity: isExiting ? 0 : 1 }}
               exit={{ opacity: 0 }}

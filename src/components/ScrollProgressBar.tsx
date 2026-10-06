@@ -25,7 +25,10 @@ export const ScrollProgressBar: React.FC = () => {
   );
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[2.5px] sm:h-[3px] z-[99990] pointer-events-none bg-neutral-900/40 backdrop-blur-xs">
+    <div
+      aria-hidden="true"
+      className="fixed top-0 left-0 right-0 h-[2.5px] sm:h-[3px] z-[99990] pointer-events-none bg-neutral-900/40 backdrop-blur-xs"
+    >
       <motion.div
         style={{
           scaleX,

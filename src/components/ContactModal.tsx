@@ -267,6 +267,104 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const [budget, setBudget] = useState('');
   const [timeline, setTimeline] = useState('');
   const [honeypot, setHoneypot] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+
+  const turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || '';
+  const turnstileContainerRef = useRef<HTMLDivElement>(null);
+  const turnstileWidgetIdRef = useRef<string | null>(null);
+
+  const resetTurnstile = useCallback(() => {
+    setTurnstileToken('');
+    if (typeof window !== 'undefined' && (window as any).turnstile && turnstileWidgetIdRef.current) {
+      try {
+        (window as any).turnstile.reset(turnstileWidgetIdRef.current);
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  // Load Cloudflare Turnstile explicit script once
+  useEffect(() => {
+    if (!turnstileSiteKey) return;
+    if (document.getElementById('cf-turnstile-script')) return;
+    const script = document.createElement('script');
+    script.id = 'cf-turnstile-script';
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+  }, [turnstileSiteKey]);
+
+  // Render Turnstile widget when modal opens and script is ready
+  useEffect(() => {
+    if (!isOpen || !turnstileSiteKey) return;
+
+    let isMounted = true;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+    const tryRender = () => {
+      if (!isMounted || !turnstileContainerRef.current || !(window as any).turnstile) return;
+      if (turnstileWidgetIdRef.current !== null) {
+        try {
+          (window as any).turnstile.remove(turnstileWidgetIdRef.current);
+        } catch {
+          // ignore
+        }
+        turnstileWidgetIdRef.current = null;
+      }
+      try {
+        const id = (window as any).turnstile.render(turnstileContainerRef.current, {
+          sitekey: turnstileSiteKey,
+          theme: 'dark',
+          callback: (token: string) => {
+            if (isMounted) {
+              setTurnstileToken(token);
+              setValidationError('');
+            }
+          },
+          'expired-callback': () => {
+            if (isMounted) setTurnstileToken('');
+          },
+          'error-callback': () => {
+            if (isMounted) setTurnstileToken('');
+          },
+        });
+        turnstileWidgetIdRef.current = id;
+      } catch (err) {
+        console.error('[Turnstile] Render error:', err);
+      }
+    };
+
+    if ((window as any).turnstile) {
+      tryRender();
+    } else {
+      pollInterval = setInterval(() => {
+        if ((window as any).turnstile) {
+          if (pollInterval) clearInterval(pollInterval);
+          pollInterval = null;
+          tryRender();
+        }
+      }, 150);
+    }
+
+    return () => {
+      isMounted = false;
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+      if (turnstileWidgetIdRef.current !== null && (window as any).turnstile) {
+        try {
+          (window as any).turnstile.remove(turnstileWidgetIdRef.current);
+        } catch {
+          // ignore
+        }
+        turnstileWidgetIdRef.current = null;
+      }
+      setTurnstileToken('');
+    };
+  }, [isOpen, turnstileSiteKey]);
 
   const [validationError, setValidationError] = useState('');
   const [invalidField, setInvalidField] = useState<'name' | 'contact' | 'project' | null>(null);
@@ -338,6 +436,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     setInvalidField(null);
     setStatus('idle');
     setFocusedField(null);
+    resetTurnstile();
   };
 
   const handleClose = () => {
@@ -352,6 +451,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (status === 'submitting') return;
     setValidationError('');
     setInvalidField(null);
 
@@ -374,6 +474,11 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     if (trimmedProject.length < 10) {
       setValidationError('Please provide a brief project description (at least 10 characters).');
       setInvalidField('project');
+      return;
+    }
+
+    if (turnstileSiteKey && !turnstileToken) {
+      setValidationError('Please complete the security check to continue.');
       return;
     }
 
@@ -407,6 +512,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
           budget: budget ? budget.trim() : '',
           timeline: timeline ? timeline.trim() : '',
           _hp: honeypot,
+          turnstileToken,
           source: context === 'project' ? 'Aadi Portfolio (Project CTA)' : 'Aadi Portfolio (Direct)',
         }),
       });
@@ -416,10 +522,15 @@ export const ContactModal: React.FC<ContactModalProps> = ({
       if (response.ok && result?.success) {
         setStatus('success');
       } else {
+        if (result?.error) {
+          setValidationError(result.error);
+        }
         setStatus('error');
+        resetTurnstile();
       }
     } catch {
       setStatus('error');
+      resetTurnstile();
     }
   };
 
@@ -1156,6 +1267,16 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                             })}
                           </div>
                         </div>
+
+                        {/* Cloudflare Turnstile */}
+                        {turnstileSiteKey && (
+                          <div className="pt-2 flex justify-start">
+                            <div
+                              ref={turnstileContainerRef}
+                              className="min-h-[65px]"
+                            />
+                          </div>
+                        )}
 
                         {/* Action Bar */}
                         <div className="pt-4 border-t border-neutral-800/80 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">

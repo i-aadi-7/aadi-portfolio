@@ -49,13 +49,27 @@ Your Destination Inbox (CONTACT_DESTINATION_EMAIL)
 
 ---
 
-## Step 3: Set Server-Side Secrets
+## Step 3: Run Rate Limiting Database Migration & Set Secrets
 
-Set your private environment secrets in Supabase (these are stored securely and never leaked to the frontend):
+### 1. Apply Rate Limiting Migration:
+Run the migration in your Supabase SQL Editor or via CLI:
+```bash
+supabase db push
+```
+*(Or execute `supabase/migrations/20261006000000_contact_rate_limits.sql` directly in Supabase Dashboard SQL Editor).*
+
+### 2. Set Server-Side Secrets:
+Set your private environment secrets in Supabase (these are stored securely on the server and never leaked to the frontend bundle):
 
 ```bash
 supabase secrets set RESEND_API_KEY="re_your_resend_api_key_here"
 supabase secrets set CONTACT_DESTINATION_EMAIL="your_inbox_email@example.com"
+supabase secrets set TURNSTILE_SECRET_KEY="0x4AAAAAA..."
+```
+
+*(Optional CORS origin lock for production)*:
+```bash
+supabase secrets set ALLOWED_ORIGIN="https://your-production-domain.com"
 ```
 
 *(Optional custom sender email)*:
@@ -63,7 +77,7 @@ supabase secrets set CONTACT_DESTINATION_EMAIL="your_inbox_email@example.com"
 supabase secrets set RESEND_FROM_EMAIL="Inquiries <hello@yourdomain.com>"
 ```
 
-Alternatively, you can add them directly in the **Supabase Dashboard** under:
+Alternatively, configure them in the **Supabase Dashboard** under:
 **Project Settings → Edge Functions → Secrets**.
 
 ---

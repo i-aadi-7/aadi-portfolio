@@ -15,6 +15,7 @@ import { SmoothScroll, useSmoothScroll } from './components/SmoothScroll';
 import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { FooterParticles } from './components/FooterParticles';
+import { NotFoundPage } from './components/NotFoundPage';
 
 const socialLinks = {
   github: 'https://github.com/i-aadi-7',
@@ -32,7 +33,29 @@ const footerItemReveal = {
   visible: { opacity: 1, y: 0 },
 };
 
+const isHomeRoute = (path: string) => path === '/' || path === '/index.html' || path === '';
+
 function PortfolioContent() {
+  const [currentPath, setCurrentPath] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.pathname;
+    }
+    return '/';
+  });
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  const handleBackHome = useCallback(() => {
+    window.history.pushState({}, '', '/');
+    setCurrentPath('/');
+  }, []);
+
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [contactContext, setContactContext] = useState<'default' | 'project'>('default');
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
@@ -102,6 +125,26 @@ function PortfolioContent() {
   const scrollToTop = () => {
     smoothScrollTo(0);
   };
+
+  if (!isHomeRoute(currentPath)) {
+    return (
+      <div
+        className="bg-[#0C0C0C] text-[#D7E2EA] min-h-screen selection:bg-[#B600A8]/30 selection:text-white"
+        style={{ fontFamily: "'Kanit', sans-serif" }}
+      >
+        <CustomCursor />
+        <NotFoundPage
+          onBackHome={handleBackHome}
+          onContactClick={() => handleOpenContact('default')}
+        />
+        <ContactModal
+          isOpen={isContactOpen}
+          onClose={() => setIsContactOpen(false)}
+          context={contactContext}
+        />
+      </div>
+    );
+  }
 
   return (
     <div

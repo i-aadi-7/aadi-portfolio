@@ -110,7 +110,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
               />
               <img
                 src={aadiAvatar}
-                alt="Aadi Avatar"
+                alt="Aadi, web designer and developer"
                 className="w-full h-auto object-contain pointer-events-none drop-shadow-[0_25px_60px_rgba(0,0,0,0.95)] filter"
                 loading="eager"
               />
