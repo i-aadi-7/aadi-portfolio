@@ -17,9 +17,9 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { FooterParticles } from './components/FooterParticles';
 
 const socialLinks = {
-  github: '',
-  linkedin: '',
-  instagram: '',
+  github: 'https://github.com/i-aadi-7',
+  linkedin: 'https://www.linkedin.com/in/aadi7/',
+  instagram: 'https://www.instagram.com/i.aadi.7/',
 };
 
 const footerReveal = {
