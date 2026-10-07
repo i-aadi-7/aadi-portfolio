@@ -3,10 +3,10 @@ import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } fro
 import { FadeIn } from './FadeIn';
 import { AnimatedText } from './AnimatedText';
 import { ContactButton } from './ContactButton';
-import browserFrameImg from '../assets/images/browser_frame_3d_1791225077236.jpg';
-import codeCubeImg from '../assets/images/code_cube_3d_1791225090361.jpg';
-import uiPanelsStackImg from '../assets/images/ui_panels_stack_3d_1791225526651.jpg';
-import chromeCursorImg from '../assets/images/chrome_cursor_3d_1791225112999.jpg';
+import browserFrameImg from '../assets/images/browser_frame_3d_1791225077236.png';
+import codeCubeImg from '../assets/images/code_cube_3d_1791225090361.png';
+import uiPanelsStackImg from '../assets/images/ui_panels_stack_3d_1791225526651.png';
+import chromeCursorImg from '../assets/images/chrome_cursor_3d_1791225112999.png';
 
 interface AboutSectionProps {
   onContactClick?: () => void;
@@ -14,28 +14,29 @@ interface AboutSectionProps {
 
 export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) => {
   const sectionRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
   // Gentle mouse coordinate tracking for subtle multi-plane 3D object parallax
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  const springConfig = { damping: 30, stiffness: 200, mass: 0.5 };
+  const springConfig = { damping: 28, stiffness: 180, mass: 0.5 };
   const smoothMouseX = useSpring(mouseX, springConfig);
   const smoothMouseY = useSpring(mouseY, springConfig);
 
-  // Discrete parallax depth multipliers for each corner object (max ±4px to ±6px)
-  const obj1X = useTransform(smoothMouseX, [-500, 500], [-6, 6]);
-  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-5, 5]);
+  // Parallax depth multipliers for corner objects (~1.8x enhanced range: max ±10px to ±11px)
+  const obj1X = useTransform(smoothMouseX, [-500, 500], [-11, 11]);
+  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-9, 9]);
 
-  const obj2X = useTransform(smoothMouseX, [-500, 500], [5, -5]);
-  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-4, 4]);
+  const obj2X = useTransform(smoothMouseX, [-500, 500], [9, -9]);
+  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-8, 8]);
 
-  const obj3X = useTransform(smoothMouseX, [-500, 500], [-4, 4]);
-  const obj3Y = useTransform(smoothMouseY, [-500, 500], [6, -6]);
+  const obj3X = useTransform(smoothMouseX, [-500, 500], [-8, 8]);
+  const obj3Y = useTransform(smoothMouseY, [-500, 500], [11, -11]);
 
-  const obj4X = useTransform(smoothMouseX, [-500, 500], [6, -6]);
-  const obj4Y = useTransform(smoothMouseY, [-500, 500], [5, -5]);
+  const obj4X = useTransform(smoothMouseX, [-500, 500], [11, -11]);
+  const obj4Y = useTransform(smoothMouseY, [-500, 500], [9, -9]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (prefersReducedMotion) return;
@@ -45,11 +46,23 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
     const centerY = rect.top + rect.height / 2;
     mouseX.set(e.clientX - centerX);
     mouseY.set(e.clientY - centerY);
+
+    if (contentRef.current) {
+      const cRect = contentRef.current.getBoundingClientRect();
+      const mx = e.clientX - cRect.left;
+      const my = e.clientY - cRect.top;
+      contentRef.current.style.setProperty('--cursor-x', `${mx}px`);
+      contentRef.current.style.setProperty('--cursor-y', `${my}px`);
+      contentRef.current.style.setProperty('--cursor-active', '1');
+    }
   };
 
   const handleMouseLeave = () => {
     mouseX.set(0);
     mouseY.set(0);
+    if (contentRef.current) {
+      contentRef.current.style.setProperty('--cursor-active', '0');
+    }
   };
 
   return (
@@ -83,7 +96,6 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             src={browserFrameImg}
             alt=""
             aria-hidden="true"
-            style={{ filter: 'brightness(1.14) contrast(1.12)' }}
             className="w-[135px] sm:w-[180px] md:w-[235px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
             loading="lazy"
           />
@@ -139,7 +151,15 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
       </motion.div>
 
       {/* Central Content */}
-      <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto w-full">
+      <div
+        ref={contentRef}
+        style={{
+          ['--cursor-x' as any]: '-999px',
+          ['--cursor-y' as any]: '-999px',
+          ['--cursor-active' as any]: '0',
+        }}
+        className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto w-full"
+      >
         {/* Heading */}
         <FadeIn delay={0} y={35} className="w-full">
           <h2
@@ -153,39 +173,83 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         {/* Gap between heading and text */}
         <div className="h-10 sm:h-14 md:h-16" />
 
-        {/* Animated paragraph 1 */}
-        <AnimatedText
-          text="I DESIGN AND BUILD MODERN DIGITAL EXPERIENCES THAT FEEL SHARP, FAST, AND DIFFERENT."
-          className="text-[#D7E2EA] font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[720px] mx-auto select-none tracking-wide"
-          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
-        />
+        {/* Text Container with Pointer Magnetic Reveal Overlay */}
+        <div className="relative w-full">
+          {/* Animated paragraph 1 */}
+          <AnimatedText
+            text="I DESIGN AND BUILD MODERN DIGITAL EXPERIENCES THAT FEEL SHARP, FAST, AND DIFFERENT."
+            className="text-[#D7E2EA] font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[720px] mx-auto select-none tracking-wide"
+            style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
+          />
 
-        <div className="h-5 sm:h-7" />
+          <div className="h-5 sm:h-7" />
 
-        {/* Animated paragraph 2 */}
-        <AnimatedText
-          text="I MIX UI/UX, FRONTEND DEVELOPMENT, MOTION, AND INTERACTION TO TURN IDEAS INTO POLISHED WEBSITES PEOPLE REMEMBER."
-          className="text-[#D7E2EA]/90 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide"
-          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
-        />
+          {/* Animated paragraph 2 */}
+          <AnimatedText
+            text="I MIX UI/UX, FRONTEND DEVELOPMENT, MOTION, AND INTERACTION TO TURN IDEAS INTO POLISHED WEBSITES PEOPLE REMEMBER."
+            className="text-[#D7E2EA]/90 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide"
+            style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
+          />
 
-        <div className="h-5 sm:h-7" />
+          <div className="h-5 sm:h-7" />
 
-        {/* Animated paragraph 3 */}
-        <AnimatedText
-          text="I'M ESPECIALLY INTERESTED IN INTERACTIVE WEB EXPERIENCES, STRONG VISUAL SYSTEMS, AND BUILDING PRODUCTS THAT FEEL AS GOOD TO USE AS THEY LOOK."
-          className="text-[#D7E2EA]/90 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[760px] mx-auto select-none tracking-wide"
-          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
-        />
+          {/* Animated paragraph 3 */}
+          <AnimatedText
+            text="I'M ESPECIALLY INTERESTED IN INTERACTIVE WEB EXPERIENCES, STRONG VISUAL SYSTEMS, AND BUILDING PRODUCTS THAT FEEL AS GOOD TO USE AS THEY LOOK."
+            className="text-[#D7E2EA]/90 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[760px] mx-auto select-none tracking-wide"
+            style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
+          />
 
-        <div className="h-5 sm:h-7" />
+          <div className="h-5 sm:h-7" />
 
-        {/* Animated paragraph 4 */}
-        <AnimatedText
-          text="RIGHT NOW, I'M ALSO BUILDING MY OWN AGENCY OS / CRM TO MANAGE LEADS, OUTREACH, FOLLOW-UPS, AND CLIENT WORK MORE EFFECTIVELY."
-          className="text-[#D7E2EA]/80 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide"
-          style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
-        />
+          {/* Animated paragraph 4 */}
+          <AnimatedText
+            text="RIGHT NOW, I'M ALSO BUILDING MY OWN AGENCY OS / CRM TO MANAGE LEADS, OUTREACH, FOLLOW-UPS, AND CLIENT WORK MORE EFFECTIVELY."
+            className="text-[#D7E2EA]/80 font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide"
+            style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
+          />
+
+          {/* Desktop Magnetic Reveal Spotlight Overlay (1.8x radius ~240px with smooth falloff) */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none transition-opacity duration-300 select-none hidden md:block"
+            style={{
+              opacity: 'var(--cursor-active, 0)',
+              maskImage:
+                'radial-gradient(circle 240px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.45) 50%, transparent 100%)',
+              WebkitMaskImage:
+                'radial-gradient(circle 240px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.45) 50%, transparent 100%)',
+            }}
+          >
+            <p
+              className="text-[#FFFFFF] font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[720px] mx-auto select-none tracking-wide drop-shadow-[0_0_12px_rgba(215,226,234,0.4)]"
+              style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' }}
+            >
+              I DESIGN AND BUILD MODERN DIGITAL EXPERIENCES THAT FEEL SHARP, FAST, AND DIFFERENT.
+            </p>
+            <div className="h-5 sm:h-7" />
+            <p
+              className="text-[#FFFFFF] font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide drop-shadow-[0_0_12px_rgba(215,226,234,0.4)]"
+              style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' }}
+            >
+              I MIX UI/UX, FRONTEND DEVELOPMENT, MOTION, AND INTERACTION TO TURN IDEAS INTO POLISHED WEBSITES PEOPLE REMEMBER.
+            </p>
+            <div className="h-5 sm:h-7" />
+            <p
+              className="text-[#FFFFFF] font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[760px] mx-auto select-none tracking-wide drop-shadow-[0_0_12px_rgba(215,226,234,0.4)]"
+              style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' }}
+            >
+              I'M ESPECIALLY INTERESTED IN INTERACTIVE WEB EXPERIENCES, STRONG VISUAL SYSTEMS, AND BUILDING PRODUCTS THAT FEEL AS GOOD TO USE AS THEY LOOK.
+            </p>
+            <div className="h-5 sm:h-7" />
+            <p
+              className="text-[#FFFFFF] font-medium uppercase text-center leading-[1.85] max-w-[700px] sm:max-w-[740px] mx-auto select-none tracking-wide drop-shadow-[0_0_12px_rgba(215,226,234,0.4)]"
+              style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' }}
+            >
+              RIGHT NOW, I'M ALSO BUILDING MY OWN AGENCY OS / CRM TO MANAGE LEADS, OUTREACH, FOLLOW-UPS, AND CLIENT WORK MORE EFFECTIVELY.
+            </p>
+          </div>
+        </div>
 
         {/* Gap between text block and button */}
         <div className="h-14 sm:h-18 md:h-22" />

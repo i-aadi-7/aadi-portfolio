@@ -70,7 +70,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
                 },
               },
             }}
-            className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-center select-none text-[13vw] sm:text-[14.8vw] md:text-[16vw] lg:text-[17vw] xl:text-[17.1vw] py-2"
+            className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-center select-none text-[15.2vw] sm:text-[14.8vw] md:text-[16vw] lg:text-[17vw] xl:text-[17.1vw] py-2"
           >
             {['HI,', "I'M", 'AADI'].map((word, i) => (
               <React.Fragment key={word}>
@@ -97,7 +97,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
         </div>
 
         {/* Floating Avatar overlay with cursor-driven depth and ambient shadow */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto w-[clamp(160px,42vw,220px)] sm:w-[clamp(220px,30vw,280px)] md:w-[clamp(280px,34vw,460px)] max-h-[60vh] flex items-center justify-center">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto w-[clamp(215px,58vw,270px)] sm:w-[clamp(240px,32vw,300px)] md:w-[clamp(280px,34vw,460px)] max-h-[60vh] flex items-center justify-center">
           <FadeIn delay={0.4} y={20}>
             <Magnet
               padding={100}
