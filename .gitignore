@@ -12,3 +12,16 @@ coverage/
 .env*.local
 !.env.example
 .playwright-mcp/
+
+# Local AI / agent development tooling
+.agent/
+.agents/
+.gemini/
+.gsd/
+.kilo/
+adapters/
+scripts/
+GSD-STYLE.md
+PROJECT_RULES.md
+VERSION
+model_capabilities.yaml
