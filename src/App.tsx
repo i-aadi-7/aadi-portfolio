@@ -17,6 +17,7 @@ import { ArrowUp, ArrowUpRight } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { FooterParticles } from './components/FooterParticles';
 import { NotFoundPage } from './components/NotFoundPage';
+import { Analytics } from '@vercel/analytics/react';
 
 const socialLinks = {
   github: 'https://github.com/i-aadi-7',
@@ -420,6 +421,7 @@ export default function App() {
   return (
     <SmoothScroll>
       <PortfolioContent />
+      <Analytics />
     </SmoothScroll>
   );
 }
