@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { HeroSection } from './components/HeroSection';
 import { MarqueeSection } from './components/MarqueeSection';
 import { AboutSection } from './components/AboutSection';
@@ -420,6 +421,7 @@ export default function App() {
   return (
     <SmoothScroll>
       <PortfolioContent />
+      <Analytics />
     </SmoothScroll>
   );
 }
