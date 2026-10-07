@@ -9,15 +9,40 @@ interface ProjectModalProps {
   onContactClick: () => void;
 }
 
+const FOCUSABLE_SELECTOR =
+  'a[href], area[href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]):not([disabled]), [contenteditable]';
+
+function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
+  if (!container) return [];
+  const elements = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+  return elements.filter((el) => {
+    return (
+      el.offsetWidth > 0 &&
+      el.offsetHeight > 0 &&
+      !el.hasAttribute('disabled') &&
+      el.getAttribute('aria-hidden') !== 'true' &&
+      window.getComputedStyle(el).visibility !== 'hidden' &&
+      window.getComputedStyle(el).display !== 'none'
+    );
+  });
+}
+
 export const ProjectModal: React.FC<ProjectModalProps> = ({
   project,
   onClose,
   onContactClick,
 }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+  const isHandoffRef = useRef<boolean>(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!project) return;
+
+    openerRef.current = document.activeElement as HTMLElement | null;
+    isHandoffRef.current = false;
 
     // Lock page background scroll and stop Lenis smoothly
     const originalOverflow = document.body.style.overflow;
@@ -28,20 +53,69 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
       globalLenis.stop();
     }
 
-    // Handle ESC key to close modal
+    // Focus close button on open
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    const focusInitial = () => {
+      if (closeButtonRef.current) {
+        closeButtonRef.current.focus({ preventScroll: true });
+      }
+    };
+
+    const rafId = requestAnimationFrame(() => {
+      focusInitial();
+      timerId = setTimeout(focusInitial, 50);
+    });
+
+    // Handle ESC key and focus trap
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const focusable = getFocusableElements(modalRef.current);
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const current = document.activeElement as HTMLElement | null;
+
+        if (e.shiftKey) {
+          if (current === first || !modalRef.current?.contains(current)) {
+            e.preventDefault();
+            last.focus({ preventScroll: true });
+          }
+        } else {
+          if (current === last || !modalRef.current?.contains(current)) {
+            e.preventDefault();
+            first.focus({ preventScroll: true });
+          }
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      cancelAnimationFrame(rafId);
+      if (timerId) clearTimeout(timerId);
       document.body.style.overflow = originalOverflow;
       if (globalLenis && typeof globalLenis.start === 'function') {
         globalLenis.start();
       }
       window.removeEventListener('keydown', handleKeyDown);
+
+      if (!isHandoffRef.current) {
+        requestAnimationFrame(() => {
+          if (openerRef.current && document.contains(openerRef.current) && typeof openerRef.current.focus === 'function') {
+            openerRef.current.focus({ preventScroll: true });
+          }
+        });
+      }
     };
   }, [project, onClose]);
 
@@ -64,6 +138,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 
         {/* Modal Outer Container with viewport-safe max height */}
         <motion.div
+          ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="project-modal-title"
           initial={{ opacity: 0, scale: 0.94, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 20 }}
@@ -76,8 +154,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
         >
           {/* Close button - sticky/fixed relative to modal container */}
           <button
+            ref={closeButtonRef}
+            type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full text-[#D7E2EA]/70 hover:text-white hover:bg-white/10 transition-colors z-30 cursor-pointer"
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full text-[#D7E2EA]/70 hover:text-white hover:bg-white/10 transition-colors z-30 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
             aria-label="Close project modal"
           >
             <X size={22} className="sm:w-6 sm:h-6" />
@@ -103,7 +183,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                 <span className="text-xs uppercase tracking-widest text-[#D7E2EA]/70 font-semibold block">
                   {project.label || 'INTERNAL PRODUCT'}
                 </span>
-                <h2 className="text-xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-[#D7E2EA] mt-0.5">
+                <h2
+                  id="project-modal-title"
+                  className="text-xl sm:text-3xl md:text-4xl font-black uppercase tracking-tight text-[#D7E2EA] mt-0.5"
+                >
                   {project.name}
                 </h2>
               </div>
@@ -226,18 +309,21 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
               </div>
               <div className="flex items-center gap-3 w-full sm:w-auto shrink-0">
                 <button
+                  type="button"
                   onClick={() => {
+                    isHandoffRef.current = true;
                     onClose();
                     onContactClick();
                   }}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 border border-[#D7E2EA]/30 hover:border-white text-white text-xs sm:text-sm uppercase tracking-wider font-medium transition-all duration-200 cursor-pointer shadow-sm hover:bg-neutral-800"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900 border border-[#D7E2EA]/30 hover:border-white text-white text-xs sm:text-sm uppercase tracking-wider font-medium transition-all duration-200 cursor-pointer shadow-sm hover:bg-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
                 >
                   <span>START A PROJECT</span>
                   <ArrowUpRight size={16} />
                 </button>
                 <button
+                  type="button"
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-full border border-[#D7E2EA]/20 text-[#D7E2EA]/70 hover:text-white hover:bg-white/10 text-xs sm:text-sm uppercase tracking-wider font-medium transition-colors cursor-pointer text-center"
+                  className="px-5 py-2.5 rounded-full border border-[#D7E2EA]/20 text-[#D7E2EA]/70 hover:text-white hover:bg-white/10 text-xs sm:text-sm uppercase tracking-wider font-medium transition-colors cursor-pointer text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
                 >
                   Close
                 </button>

@@ -36,6 +36,24 @@ const AVAILABLE_SERVICES = [
   'Full-Stack Web Products',
 ] as const;
 
+const FOCUSABLE_SELECTOR =
+  'a[href], area[href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]):not([disabled]), [contenteditable]';
+
+function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
+  if (!container) return [];
+  const elements = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+  return elements.filter((el) => {
+    return (
+      el.offsetWidth > 0 &&
+      el.offsetHeight > 0 &&
+      !el.hasAttribute('disabled') &&
+      el.getAttribute('aria-hidden') !== 'true' &&
+      window.getComputedStyle(el).visibility !== 'hidden' &&
+      window.getComputedStyle(el).display !== 'none'
+    );
+  });
+}
+
 // Stable Typewriter Heading Component
 const TypewriterHeading: React.FC<{
   text: string;
@@ -376,6 +394,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion();
 
@@ -399,35 +419,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     sheenY.set(-1000);
   }, [sheenX, sheenY]);
 
-  // Lock background scroll
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const globalLenis = (window as any).lenis;
-    if (globalLenis && typeof globalLenis.stop === 'function') {
-      globalLenis.stop();
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      if (globalLenis && typeof globalLenis.start === 'function') {
-        globalLenis.start();
-      }
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setName('');
     setContact('');
     setProjectScope('');
@@ -439,12 +431,96 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     setStatus('idle');
     setFocusedField(null);
     resetTurnstile();
-  };
+  }, [resetTurnstile]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     resetForm();
     onClose();
-  };
+  }, [resetForm, onClose]);
+
+  // Lock background scroll, manage focus, and trap Tab
+  useEffect(() => {
+    if (!isOpen) return;
+
+    openerRef.current = document.activeElement as HTMLElement | null;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const globalLenis = (window as any).lenis;
+    if (globalLenis && typeof globalLenis.stop === 'function') {
+      globalLenis.stop();
+    }
+
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    const focusInitial = () => {
+      if (closeButtonRef.current) {
+        closeButtonRef.current.focus({ preventScroll: true });
+      }
+    };
+
+    const rafId = requestAnimationFrame(() => {
+      focusInitial();
+      timerId = setTimeout(focusInitial, 50);
+    });
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const focusable = getFocusableElements(modalRef.current);
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const current = document.activeElement as HTMLElement | null;
+
+        if (e.shiftKey) {
+          if (current === first || !modalRef.current?.contains(current)) {
+            e.preventDefault();
+            last.focus({ preventScroll: true });
+          }
+        } else {
+          if (current === last || !modalRef.current?.contains(current)) {
+            e.preventDefault();
+            first.focus({ preventScroll: true });
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (timerId) clearTimeout(timerId);
+      document.body.style.overflow = originalOverflow;
+      if (globalLenis && typeof globalLenis.start === 'function') {
+        globalLenis.start();
+      }
+      window.removeEventListener('keydown', handleKeyDown);
+
+      requestAnimationFrame(() => {
+        if (openerRef.current && document.contains(openerRef.current) && typeof openerRef.current.focus === 'function') {
+          openerRef.current.focus({ preventScroll: true });
+        } else {
+          // Fallback to originating project CTA if opener was unmounted during handoff
+          const fallback =
+            document.querySelector<HTMLElement>('#projects button, [data-cursor="view"], button') ||
+            null;
+          if (fallback && typeof fallback.focus === 'function') {
+            fallback.focus({ preventScroll: true });
+          }
+        }
+      });
+    };
+  }, [isOpen, handleClose]);
 
   // Live validity checks
   const isNameValid = name.trim().length >= 2;
@@ -618,6 +694,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
             {/* Top Close Action (40x40 hit target, small icon, scale on hover) */}
             <motion.button
+              ref={closeButtonRef}
               type="button"
               onClick={handleClose}
               whileHover={shouldReduceMotion ? {} : { scale: 1.05 }}
