@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSmoothScroll } from './SmoothScroll';
 
@@ -10,35 +10,155 @@ const SECTIONS = [
   { id: 'projects', label: 'Projects' },
 ];
 
+interface CachedSection {
+  id: string;
+  offsetTop: number;
+}
+
 export const SectionTracker: React.FC = () => {
   const [activeSection, setActiveSection] = useState('hero');
   const [isVisible, setIsVisible] = useState(false);
   const { scrollTo: smoothScrollTo } = useSmoothScroll();
 
+  const activeSectionRef = useRef(activeSection);
+  const isVisibleRef = useRef(isVisible);
+  const cachedOffsetsRef = useRef<CachedSection[]>([]);
+
   useEffect(() => {
-    const handleScroll = () => {
-      // Show tracker once scrolled a bit past top
-      if (window.scrollY > 200) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
+    // Only run tracking on desktop (md breakpoint: >= 768px)
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    let rafId: number | null = null;
+    let resizeObserver: ResizeObserver | null = null;
+
+    const calculateOffsets = () => {
+      const cached: CachedSection[] = [];
+      for (const sec of SECTIONS) {
+        const el = document.getElementById(sec.id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          cached.push({
+            id: sec.id,
+            offsetTop: rect.top + window.scrollY,
+          });
+        }
+      }
+      cachedOffsetsRef.current = cached;
+    };
+
+    const updateActiveSection = () => {
+      const scrollY = window.scrollY;
+      const newVisible = scrollY > 200;
+
+      if (newVisible !== isVisibleRef.current) {
+        isVisibleRef.current = newVisible;
+        setIsVisible(newVisible);
       }
 
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      if (!newVisible && scrollY <= 200) {
+        if (activeSectionRef.current !== 'hero') {
+          activeSectionRef.current = 'hero';
+          setActiveSection('hero');
+        }
+        return;
+      }
 
-      for (let i = SECTIONS.length - 1; i >= 0; i--) {
-        const el = document.getElementById(SECTIONS[i].id);
-        if (el && el.offsetTop <= scrollPosition) {
-          setActiveSection(SECTIONS[i].id);
+      const scrollPosition = scrollY + window.innerHeight / 3;
+      const cached = cachedOffsetsRef.current;
+
+      for (let i = cached.length - 1; i >= 0; i--) {
+        if (cached[i].offsetTop <= scrollPosition) {
+          const id = cached[i].id;
+          if (id !== activeSectionRef.current) {
+            activeSectionRef.current = id;
+            setActiveSection(id);
+          }
           break;
         }
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    const handleScroll = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        updateActiveSection();
+      });
+    };
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleResize = () => {
+      calculateOffsets();
+      updateActiveSection();
+    };
+
+    let cleanupListeners: (() => void) | null = null;
+
+    const setupTracking = () => {
+      calculateOffsets();
+      updateActiveSection();
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      window.addEventListener('resize', handleResize, { passive: true });
+
+      // Observe body for layout changes (e.g., dynamic content, image load)
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(() => {
+          calculateOffsets();
+          updateActiveSection();
+        });
+        resizeObserver.observe(document.body);
+      }
+
+      // Recalculate once fonts load to account for layout shifts
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          calculateOffsets();
+          updateActiveSection();
+        });
+      }
+
+      cleanupListeners = () => {
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('resize', handleResize);
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+          resizeObserver = null;
+        }
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      };
+    };
+
+    const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        if (!cleanupListeners) {
+          setupTracking();
+        }
+      } else {
+        if (cleanupListeners) {
+          cleanupListeners();
+          cleanupListeners = null;
+        }
+        if (isVisibleRef.current) {
+          isVisibleRef.current = false;
+          setIsVisible(false);
+        }
+      }
+    };
+
+    if (mediaQuery.matches) {
+      setupTracking();
+    }
+
+    mediaQuery.addEventListener('change', handleMediaChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleMediaChange);
+      if (cleanupListeners) {
+        cleanupListeners();
+      }
+    };
   }, []);
 
   const scrollTo = (id: string) => {
