@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 
 interface NotFoundPageProps {
@@ -10,6 +10,32 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({
   onBackHome,
   onContactClick,
 }) => {
+  useEffect(() => {
+    let metaTag = document.querySelector('meta[name="robots"]');
+    let created = false;
+
+    if (!metaTag) {
+      metaTag = document.createElement('meta');
+      metaTag.setAttribute('name', 'robots');
+      document.head.appendChild(metaTag);
+      created = true;
+    }
+
+    const previousContent = metaTag.getAttribute('content');
+    metaTag.setAttribute('content', 'noindex, nofollow');
+
+    return () => {
+      if (created && metaTag?.parentNode) {
+        metaTag.parentNode.removeChild(metaTag);
+      } else if (metaTag) {
+        if (previousContent !== null) {
+          metaTag.setAttribute('content', previousContent);
+        } else {
+          metaTag.removeAttribute('content');
+        }
+      }
+    };
+  }, []);
   return (
     <div
       className="min-h-screen w-full bg-[#0C0C0C] text-[#D7E2EA] flex flex-col justify-between select-none"
