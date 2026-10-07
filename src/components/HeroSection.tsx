@@ -5,7 +5,9 @@ import { Magnet } from './Magnet';
 import { ContactButton } from './ContactButton';
 import { HeroParticles } from './HeroParticles';
 import { useSmoothScroll } from './SmoothScroll';
-import aadiAvatar from '../assets/images/aadi_transparent_avatar.png';
+import aadiAvatarPng from '../assets/images/aadi_transparent_avatar.png';
+import aadiAvatarWebp from '../assets/images/aadi_transparent_avatar.webp';
+import aadiAvatarAvif from '../assets/images/aadi_transparent_avatar.avif';
 
 interface HeroSectionProps {
   onContactClick?: () => void;
@@ -110,12 +112,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
                 aria-hidden="true"
                 className="absolute inset-0 scale-90 rounded-full bg-black/60 blur-2xl pointer-events-none -z-10"
               />
-              <img
-                src={aadiAvatar}
-                alt="Aadi, web designer and developer"
-                className="w-full h-auto object-contain pointer-events-none drop-shadow-[0_25px_60px_rgba(0,0,0,0.95)] filter"
-                loading="eager"
-              />
+              <picture className="w-full flex items-center justify-center">
+                <source srcSet={aadiAvatarAvif} type="image/avif" />
+                <source srcSet={aadiAvatarWebp} type="image/webp" />
+                <img
+                  src={aadiAvatarPng}
+                  alt="Aadi, web designer and developer"
+                  className="w-full h-auto object-contain pointer-events-none drop-shadow-[0_25px_60px_rgba(0,0,0,0.95)] filter"
+                  loading="eager"
+                  fetchPriority="high"
+                  width={1254}
+                  height={1254}
+                />
+              </picture>
             </Magnet>
           </FadeIn>
         </div>
