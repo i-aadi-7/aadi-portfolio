@@ -397,7 +397,21 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const contactInputRef = useRef<HTMLInputElement>(null);
+  const projectInputRef = useRef<HTMLTextAreaElement>(null);
+  const successHeadingRef = useRef<HTMLHeadingElement>(null);
   const shouldReduceMotion = useReducedMotion();
+
+  // Focus success heading on transition
+  useEffect(() => {
+    if (status === 'success') {
+      const timer = setTimeout(() => {
+        successHeadingRef.current?.focus({ preventScroll: true });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
 
   // Mouse sheen motion values for subtle modal border sheen (desktop only)
   const sheenX = useMotionValue(-1000);
@@ -540,18 +554,27 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     if (trimmedName.length < 2) {
       setValidationError('Please enter a valid name (at least 2 characters).');
       setInvalidField('name');
+      requestAnimationFrame(() => {
+        nameInputRef.current?.focus();
+      });
       return;
     }
 
     if (trimmedContact.length < 5) {
       setValidationError('Please enter a valid email or WhatsApp contact.');
       setInvalidField('contact');
+      requestAnimationFrame(() => {
+        contactInputRef.current?.focus();
+      });
       return;
     }
 
     if (trimmedProject.length < 10) {
       setValidationError('Please provide a brief project description (at least 10 characters).');
       setInvalidField('project');
+      requestAnimationFrame(() => {
+        projectInputRef.current?.focus();
+      });
       return;
     }
 
@@ -715,13 +738,16 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 overscrollBehavior: 'contain',
                 WebkitOverflowScrolling: 'touch',
               }}
-              className="w-full overflow-y-auto overflow-x-hidden p-6 sm:p-8 md:p-10 focus:outline-none relative z-10 custom-scrollbar"
+              className="w-full overflow-y-auto overflow-x-hidden p-6 sm:p-8 md:p-10 focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/50 focus-visible:ring-inset relative z-10 custom-scrollbar"
             >
               <AnimatePresence mode="wait">
                 {/* 1. EDITORIAL SUCCESS / PROJECT RECEIPT STATE */}
                 {status === 'success' ? (
                   <motion.div
                     key="success-receipt-view"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
                     initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
@@ -742,11 +768,13 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                     {/* Masked text reveal heading */}
                     <div className="overflow-hidden mb-2">
                       <motion.h2
+                        ref={successHeadingRef}
+                        tabIndex={-1}
                         id="contact-modal-title"
                         initial={{ y: '100%', opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.4, ease: modalEase }}
-                        className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-none"
+                        className="text-2xl sm:text-3xl lg:text-4xl font-black uppercase tracking-tight text-white leading-none focus:outline-none"
                       >
                         PROJECT RECEIVED
                       </motion.h2>
@@ -896,6 +924,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                   /* 2. ERROR STATE */
                   <motion.div
                     key="error-view"
+                    role="alert"
                     initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
@@ -936,7 +965,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                       <button
                         type="button"
                         onClick={handleClose}
-                        className="group/sec relative px-5 py-2.5 rounded-xl border border-neutral-800 text-[#D7E2EA]/60 hover:text-white hover:border-neutral-700 text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer text-center overflow-hidden"
+                        className="group/sec relative px-5 py-2.5 rounded-xl border border-neutral-800 text-[#D7E2EA]/60 hover:text-white hover:border-neutral-700 text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer text-center overflow-hidden focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-400"
                       >
                         <span className="relative z-10">CLOSE</span>
                         <span className="absolute bottom-0 left-0 w-full h-[1px] bg-white/40 scale-x-0 group-hover/sec:scale-x-100 transition-transform duration-200 origin-left" />
@@ -1035,6 +1064,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                       <AnimatePresence>
                         {validationError && (
                           <motion.div
+                            role="alert"
+                            id="contact-validation-error"
                             initial={{ opacity: 0, height: 0, y: -6 }}
                             animate={{ opacity: 1, height: 'auto', y: 0 }}
                             exit={{ opacity: 0, height: 0, y: -6 }}
@@ -1045,7 +1076,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                             <button
                               type="button"
                               onClick={() => setValidationError('')}
-                              className="text-red-400/60 hover:text-red-300 ml-2 cursor-pointer"
+                              className="text-red-400/60 hover:text-red-300 ml-2 cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
                               aria-label="Dismiss error"
                             >
                               <X size={14} />
@@ -1054,7 +1085,12 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                         )}
                       </AnimatePresence>
 
-                      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                      <form
+                        onSubmit={handleSubmit}
+                        className="space-y-5"
+                        noValidate
+                        aria-busy={status === 'submitting'}
+                      >
                         {/* Anti-spam honeypot */}
                         <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
                           <label htmlFor="contact-hp">Website</label>
@@ -1099,11 +1135,14 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                             </div>
                             <div className="relative">
                               <input
+                                ref={nameInputRef}
                                 id="contact-name"
                                 type="text"
                                 required
                                 maxLength={100}
                                 value={name}
+                                aria-invalid={invalidField === 'name' ? 'true' : undefined}
+                                aria-describedby={invalidField === 'name' ? 'contact-validation-error' : undefined}
                                 onFocus={() => setFocusedField('name')}
                                 onBlur={() => setFocusedField(null)}
                                 onChange={(e) => {
@@ -1157,11 +1196,14 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                             </div>
                             <div className="relative">
                               <input
+                                ref={contactInputRef}
                                 id="contact-method"
                                 type="text"
                                 required
                                 maxLength={150}
                                 value={contact}
+                                aria-invalid={invalidField === 'contact' ? 'true' : undefined}
+                                aria-describedby={invalidField === 'contact' ? 'contact-validation-error' : undefined}
                                 onFocus={() => setFocusedField('contact')}
                                 onBlur={() => setFocusedField(null)}
                                 onChange={(e) => {
@@ -1216,11 +1258,14 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                           </div>
                           <div className="relative">
                             <textarea
+                              ref={projectInputRef}
                               id="contact-scope"
                               rows={4}
                               required
                               maxLength={3000}
                               value={projectScope}
+                              aria-invalid={invalidField === 'project' ? 'true' : undefined}
+                              aria-describedby={invalidField === 'project' ? 'contact-validation-error' : undefined}
                               onFocus={() => setFocusedField('project')}
                               onBlur={() => setFocusedField(null)}
                               onChange={(e) => {
@@ -1252,26 +1297,34 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                         {/* 4. BUDGET RANGE */}
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block font-mono text-[10.5px] uppercase tracking-wider text-[#D7E2EA]/60">
+                            <label
+                              id="budget-group-label"
+                              className="block font-mono text-[10.5px] uppercase tracking-wider text-[#D7E2EA]/60"
+                            >
                               4. Budget Range <span className="text-[#D7E2EA]/35">(Optional)</span>
                             </label>
                             {budget && (
                               <button
                                 type="button"
                                 onClick={() => setBudget('')}
-                                className="text-[10px] font-mono text-[#D7E2EA]/40 hover:text-[#D7E2EA] transition-colors cursor-pointer"
+                                className="text-[10px] font-mono text-[#D7E2EA]/40 hover:text-[#D7E2EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-400"
                               >
                                 Clear
                               </button>
                             )}
                           </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          <div
+                            role="group"
+                            aria-labelledby="budget-group-label"
+                            className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+                          >
                             {BUDGET_OPTIONS.map((opt) => {
                               const isSelected = budget === opt;
                               return (
                                 <motion.button
                                   key={opt}
                                   type="button"
+                                  aria-pressed={isSelected}
                                   onClick={() => setBudget(isSelected ? '' : opt)}
                                   whileHover={shouldReduceMotion ? {} : { y: -1 }}
                                   whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}
@@ -1301,26 +1354,34 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                         {/* 5. TIMELINE */}
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <label className="block font-mono text-[10.5px] uppercase tracking-wider text-[#D7E2EA]/60">
+                            <label
+                              id="timeline-group-label"
+                              className="block font-mono text-[10.5px] uppercase tracking-wider text-[#D7E2EA]/60"
+                            >
                               5. Timeline <span className="text-[#D7E2EA]/35">(Optional)</span>
                             </label>
                             {timeline && (
                               <button
                                 type="button"
                                 onClick={() => setTimeline('')}
-                                className="text-[10px] font-mono text-[#D7E2EA]/40 hover:text-[#D7E2EA] transition-colors cursor-pointer"
+                                className="text-[10px] font-mono text-[#D7E2EA]/40 hover:text-[#D7E2EA] transition-colors cursor-pointer focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-400"
                               >
                                 Clear
                               </button>
                             )}
                           </div>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          <div
+                            role="group"
+                            aria-labelledby="timeline-group-label"
+                            className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                          >
                             {TIMELINE_OPTIONS.map((opt) => {
                               const isSelected = timeline === opt;
                               return (
                                 <motion.button
                                   key={opt}
                                   type="button"
+                                  aria-pressed={isSelected}
                                   onClick={() => setTimeline(isSelected ? '' : opt)}
                                   whileHover={shouldReduceMotion ? {} : { y: -1 }}
                                   whileTap={shouldReduceMotion ? {} : { scale: 0.985 }}

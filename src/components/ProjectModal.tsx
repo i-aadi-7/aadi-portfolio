@@ -172,7 +172,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
               overscrollBehavior: 'contain',
               WebkitOverflowScrolling: 'touch',
             }}
-            className="w-full h-full overflow-y-auto overflow-x-hidden p-5 sm:p-8 md:p-10 focus:outline-none"
+            className="w-full h-full overflow-y-auto overflow-x-hidden p-5 sm:p-8 md:p-10 focus:outline-none focus-visible:ring-1 focus-visible:ring-purple-400/50 focus-visible:ring-inset"
           >
             {/* Header */}
             <div className="flex flex-wrap items-baseline gap-3 sm:gap-5 mb-5 sm:mb-6 pr-10">
