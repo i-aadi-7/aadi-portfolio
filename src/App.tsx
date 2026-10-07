@@ -6,6 +6,7 @@ import { ServicesSection } from './components/ServicesSection';
 import { ProjectsSection } from './components/ProjectsSection';
 import { ContactModal } from './components/ContactModal';
 import { ProjectModal } from './components/ProjectModal';
+import { PrivacyModal } from './components/PrivacyModal';
 import { ProjectData } from './components/ProjectCard';
 import { CustomCursor } from './components/CustomCursor';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
@@ -57,6 +58,7 @@ function PortfolioContent() {
   }, []);
 
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [contactContext, setContactContext] = useState<'default' | 'project'>('default');
   const [selectedProject, setSelectedProject] = useState<ProjectData | null>(null);
   const { scrollTo: smoothScrollTo } = useSmoothScroll();
@@ -141,6 +143,11 @@ function PortfolioContent() {
           isOpen={isContactOpen}
           onClose={() => setIsContactOpen(false)}
           context={contactContext}
+        />
+        <PrivacyModal
+          isOpen={isPrivacyOpen}
+          onClose={() => setIsPrivacyOpen(false)}
+          onContactClick={() => handleOpenContact('default')}
         />
       </div>
     );
@@ -354,6 +361,13 @@ function PortfolioContent() {
           >
             <span>DESIGNED &amp; BUILT BY AADI</span>
             <div className="flex items-center gap-5">
+              <button
+                type="button"
+                onClick={() => setIsPrivacyOpen(true)}
+                className="group inline-flex min-h-11 cursor-pointer items-center text-[#D7E2EA]/42 transition-colors hover:text-white focus:outline-none focus-visible:text-white"
+              >
+                <span>PRIVACY</span>
+              </button>
               <span>&copy; 2026</span>
               <button
                 type="button"
@@ -391,6 +405,12 @@ function PortfolioContent() {
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
         onContactClick={() => handleOpenContact('project')}
+      />
+
+      <PrivacyModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
+        onContactClick={() => handleOpenContact('default')}
       />
     </div>
   );
