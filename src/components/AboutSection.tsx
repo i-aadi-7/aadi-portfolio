@@ -26,22 +26,22 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  const springConfig = { damping: 24, stiffness: 165, mass: 0.5 };
+  const springConfig = { damping: 20, stiffness: 135, mass: 0.6 };
   const smoothMouseX = useSpring(mouseX, springConfig);
   const smoothMouseY = useSpring(mouseY, springConfig);
 
-  // Parallax depth multipliers for corner objects (max ±20px with varied depth planes)
-  const obj1X = useTransform(smoothMouseX, [-500, 500], [-20, 20]);
-  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-16, 16]);
+  // Parallax depth multipliers for corner objects (foreground, middle, and background planes)
+  const obj1X = useTransform(smoothMouseX, [-500, 500], [-42, 42]);
+  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-30, 30]);
 
-  const obj2X = useTransform(smoothMouseX, [-500, 500], [16, -16]);
-  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-15, 15]);
+  const obj2X = useTransform(smoothMouseX, [-500, 500], [30, -30]);
+  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-22, 22]);
 
-  const obj3X = useTransform(smoothMouseX, [-500, 500], [-15, 15]);
-  const obj3Y = useTransform(smoothMouseY, [-500, 500], [20, -20]);
+  const obj3X = useTransform(smoothMouseX, [-500, 500], [-18, 18]);
+  const obj3Y = useTransform(smoothMouseY, [-500, 500], [14, -14]);
 
-  const obj4X = useTransform(smoothMouseX, [-500, 500], [20, -20]);
-  const obj4Y = useTransform(smoothMouseY, [-500, 500], [16, -16]);
+  const obj4X = useTransform(smoothMouseX, [-500, 500], [42, -42]);
+  const obj4Y = useTransform(smoothMouseY, [-500, 500], [30, -30]);
 
   const captureInteractionBounds = () => {
     const section = sectionRef.current;
@@ -69,9 +69,10 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
     const centerY = sectionTop + bounds.section.height / 2;
 
     if (isTouch) {
-      const touchRange = 250;
-      mouseX.set(((clientX - centerX) / Math.max(bounds.section.width / 2, 1)) * touchRange);
-      mouseY.set(((clientY - centerY) / Math.max(bounds.section.height / 2, 1)) * touchRange);
+      const touchXRange = 214;
+      const touchYRange = 200;
+      mouseX.set(((clientX - centerX) / Math.max(bounds.section.width / 2, 1)) * touchXRange);
+      mouseY.set(((clientY - centerY) / Math.max(bounds.section.height / 2, 1)) * touchYRange);
     } else {
       mouseX.set(clientX - centerX);
       mouseY.set(clientY - centerY);
@@ -269,9 +270,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             style={{
               opacity: 'var(--cursor-active, 0)',
               maskImage:
-                'radial-gradient(circle clamp(260px, 36.6vw, 500px) at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.78) 35%, rgba(0,0,0,0.48) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)',
+                'radial-gradient(ellipse clamp(360px, 57.1vw, 780px) clamp(360px, 36.6vw, 500px) at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.88) 30%, rgba(0,0,0,0.68) 52%, rgba(0,0,0,0.35) 74%, rgba(0,0,0,0.12) 88%, transparent 100%)',
               WebkitMaskImage:
-                'radial-gradient(circle clamp(260px, 36.6vw, 500px) at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.78) 35%, rgba(0,0,0,0.48) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)',
+                'radial-gradient(ellipse clamp(360px, 57.1vw, 780px) clamp(360px, 36.6vw, 500px) at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.88) 30%, rgba(0,0,0,0.68) 52%, rgba(0,0,0,0.35) 74%, rgba(0,0,0,0.12) 88%, transparent 100%)',
             }}
           >
             <p
