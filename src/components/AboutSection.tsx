@@ -15,63 +15,116 @@ interface AboutSectionProps {
 export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) => {
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const interactionBoundsRef = useRef<{
+    section: DOMRect;
+    content: DOMRect;
+    scrollY: number;
+  } | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
-  // Gentle mouse coordinate tracking for subtle multi-plane 3D object parallax
+  // Pointer coordinate tracking for multi-plane 3D object parallax
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
-  const springConfig = { damping: 28, stiffness: 180, mass: 0.5 };
+  const springConfig = { damping: 24, stiffness: 165, mass: 0.5 };
   const smoothMouseX = useSpring(mouseX, springConfig);
   const smoothMouseY = useSpring(mouseY, springConfig);
 
-  // Parallax depth multipliers for corner objects (max ±15px with varied depth planes)
-  const obj1X = useTransform(smoothMouseX, [-500, 500], [-15, 15]);
-  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-12, 12]);
+  // Parallax depth multipliers for corner objects (max ±20px with varied depth planes)
+  const obj1X = useTransform(smoothMouseX, [-500, 500], [-20, 20]);
+  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-16, 16]);
 
-  const obj2X = useTransform(smoothMouseX, [-500, 500], [12, -12]);
-  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-11, 11]);
+  const obj2X = useTransform(smoothMouseX, [-500, 500], [16, -16]);
+  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-15, 15]);
 
-  const obj3X = useTransform(smoothMouseX, [-500, 500], [-11, 11]);
-  const obj3Y = useTransform(smoothMouseY, [-500, 500], [15, -15]);
+  const obj3X = useTransform(smoothMouseX, [-500, 500], [-15, 15]);
+  const obj3Y = useTransform(smoothMouseY, [-500, 500], [20, -20]);
 
-  const obj4X = useTransform(smoothMouseX, [-500, 500], [15, -15]);
-  const obj4Y = useTransform(smoothMouseY, [-500, 500], [12, -12]);
+  const obj4X = useTransform(smoothMouseX, [-500, 500], [20, -20]);
+  const obj4Y = useTransform(smoothMouseY, [-500, 500], [16, -16]);
+
+  const captureInteractionBounds = () => {
+    const section = sectionRef.current;
+    const content = contentRef.current;
+    if (!section || !content) return null;
+
+    const bounds = {
+      section: section.getBoundingClientRect(),
+      content: content.getBoundingClientRect(),
+      scrollY: window.scrollY,
+    };
+    interactionBoundsRef.current = bounds;
+    return bounds;
+  };
+
+  const updateInteraction = (clientX: number, clientY: number, isTouch: boolean) => {
+    if (prefersReducedMotion) return;
+    const bounds = interactionBoundsRef.current ?? captureInteractionBounds();
+    if (!bounds) return;
+
+    const scrollDelta = window.scrollY - bounds.scrollY;
+    const sectionTop = bounds.section.top - scrollDelta;
+    const contentTop = bounds.content.top - scrollDelta;
+    const centerX = bounds.section.left + bounds.section.width / 2;
+    const centerY = sectionTop + bounds.section.height / 2;
+
+    if (isTouch) {
+      const touchRange = 250;
+      mouseX.set(((clientX - centerX) / Math.max(bounds.section.width / 2, 1)) * touchRange);
+      mouseY.set(((clientY - centerY) / Math.max(bounds.section.height / 2, 1)) * touchRange);
+    } else {
+      mouseX.set(clientX - centerX);
+      mouseY.set(clientY - centerY);
+    }
+
+    const content = contentRef.current;
+    if (content) {
+      content.style.setProperty('--cursor-x', `${clientX - bounds.content.left}px`);
+      content.style.setProperty('--cursor-y', `${clientY - contentTop}px`);
+      content.style.setProperty('--cursor-active', '1');
+    }
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    if (prefersReducedMotion) return;
-    const rect = sectionRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    mouseX.set(e.clientX - centerX);
-    mouseY.set(e.clientY - centerY);
-
-    if (contentRef.current) {
-      const cRect = contentRef.current.getBoundingClientRect();
-      const mx = e.clientX - cRect.left;
-      const my = e.clientY - cRect.top;
-      contentRef.current.style.setProperty('--cursor-x', `${mx}px`);
-      contentRef.current.style.setProperty('--cursor-y', `${my}px`);
-      contentRef.current.style.setProperty('--cursor-active', '1');
-    }
+    updateInteraction(e.clientX, e.clientY, false);
   };
 
   const handleMouseLeave = () => {
     mouseX.set(0);
     mouseY.set(0);
+    interactionBoundsRef.current = null;
     if (contentRef.current) {
       contentRef.current.style.setProperty('--cursor-active', '0');
     }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+    captureInteractionBounds();
+    const touch = e.touches[0];
+    if (touch) updateInteraction(touch.clientX, touch.clientY, true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLElement>) => {
+    const touch = e.touches[0];
+    if (touch) updateInteraction(touch.clientX, touch.clientY, true);
+  };
+
+  const handleTouchEnd = () => {
+    handleMouseLeave();
   };
 
   return (
     <section
       ref={sectionRef}
       id="about"
+      onMouseEnter={captureInteractionBounds}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-8 md:px-10 py-24 sm:py-28 md:py-36 overflow-hidden bg-[#0C0C0C]"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchEnd}
+      className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-8 md:px-10 py-24 sm:py-28 md:py-36 overflow-hidden bg-[#0C0C0C] touch-pan-y"
     >
       {/* Background Architectural Grid Fragment */}
       <div
@@ -209,16 +262,16 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
           />
 
-          {/* Desktop Magnetic Reveal Spotlight Overlay with a wide, soft falloff */}
+          {/* Pointer and touch magnetic reveal overlay with a wide, soft falloff */}
           <div
             aria-hidden="true"
-            className="absolute inset-0 pointer-events-none transition-opacity duration-300 select-none hidden md:block"
+            className="absolute inset-0 pointer-events-none transition-opacity duration-300 select-none"
             style={{
               opacity: 'var(--cursor-active, 0)',
               maskImage:
-                'radial-gradient(circle 350px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.35) 70%, transparent 100%)',
+                'radial-gradient(circle clamp(260px, 36.6vw, 500px) at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.78) 35%, rgba(0,0,0,0.48) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)',
               WebkitMaskImage:
-                'radial-gradient(circle 350px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.35) 70%, transparent 100%)',
+                'radial-gradient(circle clamp(260px, 36.6vw, 500px) at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.78) 35%, rgba(0,0,0,0.48) 62%, rgba(0,0,0,0.18) 82%, transparent 100%)',
             }}
           >
             <p
