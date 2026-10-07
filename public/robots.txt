@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://aadi-portfolio-tau.vercel.app/sitemap.xml
