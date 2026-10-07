@@ -148,6 +148,26 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
           />
         </FadeIn>
       </div>
+
+      {/* Scroll indicator cue */}
+      <FadeIn
+        delay={0.6}
+        y={15}
+        className="absolute left-1/2 -translate-x-1/2 bottom-20 sm:bottom-24 md:bottom-10 z-20 pointer-events-none select-none"
+      >
+        <div
+          aria-hidden="true"
+          className="flex items-center gap-2 pointer-events-none"
+        >
+          <div className="relative w-px h-6 sm:h-7 overflow-hidden bg-white/15">
+            <div className="w-full h-full bg-[#D7E2EA]/75 animate-scroll-line" />
+          </div>
+          <span className="font-mono text-[9px] sm:text-[10px] tracking-[0.2em] text-[#D7E2EA]/60 uppercase leading-none select-none">
+            SCROLL
+          </span>
+        </div>
+      </FadeIn>
     </section>
+
   );
 };
