@@ -70,7 +70,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
                 },
               },
             }}
-            className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-center select-none text-[15.2vw] sm:text-[14.8vw] md:text-[16vw] lg:text-[17vw] xl:text-[17.1vw] py-2 -translate-y-23 md:translate-y-0"
+            className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-center select-none text-[15.2vw] sm:text-[14.8vw] md:text-[16vw] lg:text-[17vw] xl:text-[17.1vw] py-2 -translate-y-28 md:translate-y-0"
           >
             {['HI,', "I'M", 'AADI'].map((word, i) => (
               <React.Fragment key={word}>
