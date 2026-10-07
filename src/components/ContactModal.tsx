@@ -656,7 +656,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     <AnimatePresence mode="wait">
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8 select-none sm:select-text"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 max-[340px]:p-2 sm:p-5 md:p-8 select-none sm:select-text"
           data-lenis-prevent="true"
           role="dialog"
           aria-modal="true"
@@ -1150,7 +1150,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                                   if (invalidField === 'name') setInvalidField(null);
                                 }}
                                 placeholder="Your name or team"
-                                className={`w-full px-3.5 py-3 rounded-xl bg-neutral-900/90 border text-white placeholder-neutral-600 text-xs sm:text-sm transition-all duration-200 focus:outline-none ${
+                                className={`w-full px-3.5 py-3 rounded-xl bg-neutral-900/90 border text-white placeholder-neutral-600 text-base sm:text-sm transition-all duration-200 focus:outline-none ${
                                   invalidField === 'name'
                                     ? 'border-red-500/80 bg-red-950/10'
                                     : focusedField === 'name'
@@ -1211,7 +1211,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                                   if (invalidField === 'contact') setInvalidField(null);
                                 }}
                                 placeholder="name@company.com / +91..."
-                                className={`w-full px-3.5 py-3 rounded-xl bg-neutral-900/90 border text-white placeholder-neutral-600 text-xs sm:text-sm transition-all duration-200 focus:outline-none ${
+                                className={`w-full px-3.5 py-3 rounded-xl bg-neutral-900/90 border text-white placeholder-neutral-600 text-base sm:text-sm transition-all duration-200 focus:outline-none ${
                                   invalidField === 'contact'
                                     ? 'border-red-500/80 bg-red-950/10'
                                     : focusedField === 'contact'
@@ -1273,7 +1273,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                                 if (invalidField === 'project') setInvalidField(null);
                               }}
                               placeholder="Describe your vision, core features, or the problem you are solving..."
-                              className={`w-full px-3.5 py-3 rounded-xl bg-neutral-900/90 border text-white placeholder-neutral-600 text-xs sm:text-sm resize-none transition-all duration-200 leading-relaxed focus:outline-none ${
+                              className={`w-full px-3.5 py-3 rounded-xl bg-neutral-900/90 border text-white placeholder-neutral-600 text-base sm:text-sm resize-none transition-all duration-200 leading-relaxed focus:outline-none ${
                                 invalidField === 'project'
                                   ? 'border-red-500/80 bg-red-950/10'
                                   : focusedField === 'project'
@@ -1410,8 +1410,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
 
                         {/* Cloudflare Turnstile */}
                         {turnstileSiteKey && (
-                          <div className="flex justify-start">
-                            <div ref={turnstileContainerRef} />
+                          <div className="flex w-full max-w-full justify-start max-[380px]:-mx-6 max-[380px]:w-[calc(100%+3rem)] max-[380px]:max-w-none">
+                            <div ref={turnstileContainerRef} className="w-full max-w-full" />
                           </div>
                         )}
 

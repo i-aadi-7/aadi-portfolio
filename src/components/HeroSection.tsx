@@ -36,7 +36,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
             <li>
               <button
                 onClick={() => scrollTo('about')}
-                className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
+                className="inline-flex min-h-11 -my-3.5 items-center hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
               >
                 ABOUT
               </button>
@@ -44,7 +44,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
             <li>
               <button
                 onClick={onContactClick || (() => scrollTo('contact'))}
-                className="hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
+                className="inline-flex min-h-11 -my-3.5 items-center hover:opacity-70 transition-opacity duration-200 cursor-pointer uppercase font-mono text-xs sm:text-sm tracking-[0.2em]"
               >
                 CONTACT
               </button>
@@ -143,7 +143,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
 
         {/* Right Contact Button */}
         <FadeIn delay={0.5} y={20}>
-          <ContactButton onClick={onContactClick} />
+          <ContactButton
+            onClick={onContactClick}
+            className="min-h-11 whitespace-nowrap max-[340px]:px-4"
+          />
         </FadeIn>
       </div>
     </section>
