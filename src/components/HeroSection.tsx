@@ -97,7 +97,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
         </div>
 
         {/* Floating Avatar overlay with cursor-driven depth and ambient shadow */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto w-[clamp(215px,58vw,270px)] sm:w-[clamp(240px,32vw,300px)] md:w-[clamp(280px,34vw,460px)] max-h-[60vh] flex items-center justify-center">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto w-[clamp(260px,72vw,330px)] sm:w-[clamp(240px,32vw,300px)] md:w-[clamp(280px,34vw,460px)] max-h-[60vh] flex items-center justify-center">
           <FadeIn delay={0.4} y={20}>
             <Magnet
               padding={100}
