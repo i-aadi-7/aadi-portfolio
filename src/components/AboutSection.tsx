@@ -25,18 +25,18 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
   const smoothMouseX = useSpring(mouseX, springConfig);
   const smoothMouseY = useSpring(mouseY, springConfig);
 
-  // Parallax depth multipliers for corner objects (~1.8x enhanced range: max ±10px to ±11px)
-  const obj1X = useTransform(smoothMouseX, [-500, 500], [-11, 11]);
-  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-9, 9]);
+  // Parallax depth multipliers for corner objects (2x displacement amplitude)
+  const obj1X = useTransform(smoothMouseX, [-500, 500], [-22, 22]);
+  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-18, 18]);
 
-  const obj2X = useTransform(smoothMouseX, [-500, 500], [9, -9]);
-  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-8, 8]);
+  const obj2X = useTransform(smoothMouseX, [-500, 500], [18, -18]);
+  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-16, 16]);
 
-  const obj3X = useTransform(smoothMouseX, [-500, 500], [-8, 8]);
-  const obj3Y = useTransform(smoothMouseY, [-500, 500], [11, -11]);
+  const obj3X = useTransform(smoothMouseX, [-500, 500], [-16, 16]);
+  const obj3Y = useTransform(smoothMouseY, [-500, 500], [22, -22]);
 
-  const obj4X = useTransform(smoothMouseX, [-500, 500], [11, -11]);
-  const obj4Y = useTransform(smoothMouseY, [-500, 500], [9, -9]);
+  const obj4X = useTransform(smoothMouseX, [-500, 500], [22, -22]);
+  const obj4Y = useTransform(smoothMouseY, [-500, 500], [18, -18]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (prefersReducedMotion) return;
