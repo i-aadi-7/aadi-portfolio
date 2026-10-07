@@ -25,18 +25,18 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
   const smoothMouseX = useSpring(mouseX, springConfig);
   const smoothMouseY = useSpring(mouseY, springConfig);
 
-  // Parallax depth multipliers for corner objects (~1.8x enhanced range: max ±10px to ±11px)
-  const obj1X = useTransform(smoothMouseX, [-500, 500], [-11, 11]);
-  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-9, 9]);
+  // Parallax depth multipliers for corner objects (max ±15px with varied depth planes)
+  const obj1X = useTransform(smoothMouseX, [-500, 500], [-15, 15]);
+  const obj1Y = useTransform(smoothMouseY, [-500, 500], [-12, 12]);
 
-  const obj2X = useTransform(smoothMouseX, [-500, 500], [9, -9]);
-  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-8, 8]);
+  const obj2X = useTransform(smoothMouseX, [-500, 500], [12, -12]);
+  const obj2Y = useTransform(smoothMouseY, [-500, 500], [-11, 11]);
 
-  const obj3X = useTransform(smoothMouseX, [-500, 500], [-8, 8]);
-  const obj3Y = useTransform(smoothMouseY, [-500, 500], [11, -11]);
+  const obj3X = useTransform(smoothMouseX, [-500, 500], [-11, 11]);
+  const obj3Y = useTransform(smoothMouseY, [-500, 500], [15, -15]);
 
-  const obj4X = useTransform(smoothMouseX, [-500, 500], [11, -11]);
-  const obj4Y = useTransform(smoothMouseY, [-500, 500], [9, -9]);
+  const obj4X = useTransform(smoothMouseX, [-500, 500], [15, -15]);
+  const obj4Y = useTransform(smoothMouseY, [-500, 500], [12, -12]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (prefersReducedMotion) return;
@@ -209,16 +209,16 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
             style={{ fontSize: 'clamp(0.92rem, 1.5vw, 1.22rem)' } as any}
           />
 
-          {/* Desktop Magnetic Reveal Spotlight Overlay (1.8x radius ~240px with smooth falloff) */}
+          {/* Desktop Magnetic Reveal Spotlight Overlay with a wide, soft falloff */}
           <div
             aria-hidden="true"
             className="absolute inset-0 pointer-events-none transition-opacity duration-300 select-none hidden md:block"
             style={{
               opacity: 'var(--cursor-active, 0)',
               maskImage:
-                'radial-gradient(circle 240px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.45) 50%, transparent 100%)',
+                'radial-gradient(circle 350px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.35) 70%, transparent 100%)',
               WebkitMaskImage:
-                'radial-gradient(circle 240px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.45) 50%, transparent 100%)',
+                'radial-gradient(circle 350px at var(--cursor-x, -999px) var(--cursor-y, -999px), black 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.35) 70%, transparent 100%)',
             }}
           >
             <p
