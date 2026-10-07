@@ -100,12 +100,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-auto w-[clamp(260px,72vw,330px)] sm:w-[clamp(240px,32vw,300px)] md:w-[clamp(280px,34vw,460px)] max-h-[60vh] flex items-center justify-center">
           <FadeIn delay={0.4} y={20}>
             <Magnet
-              padding={100}
-              strength={16}
-              maxDistance={14}
-              activeTransition="transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)"
-              inactiveTransition="transform 0.65s cubic-bezier(0.22, 1, 0.36, 1)"
-              className="w-full flex items-center justify-center relative"
+              padding={150}
+              strength={3}
+              activeTransition="transform 0.3s ease-out"
+              inactiveTransition="transform 0.6s ease-in-out"
+              className="pointer-events-auto w-full flex items-center justify-center relative"
             >
               {/* Subtle ambient shadow behind avatar */}
               <div

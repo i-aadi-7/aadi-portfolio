@@ -1,10 +1,9 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 
 interface MagnetProps {
   children: React.ReactNode;
   padding?: number;
   strength?: number;
-  maxDistance?: number;
   activeTransition?: string;
   inactiveTransition?: string;
   className?: string;
@@ -15,84 +14,121 @@ export const Magnet: React.FC<MagnetProps> = ({
   children,
   padding = 150,
   strength = 3,
-  maxDistance = 20,
   activeTransition = 'transform 0.3s ease-out',
   inactiveTransition = 'transform 0.6s ease-in-out',
   className = '',
   style,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hoveredRef = useRef(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
+  const targetRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef(false);
+  const frameRef = useRef<number | null>(null);
+  const pointerRef = useRef({ x: 0, y: 0 });
+  const supportsMagnetRef = useRef(false);
+
+  const resetPosition = useCallback(() => {
+    const target = targetRef.current;
+    if (!target) return;
+
+    activeRef.current = false;
+    target.style.transition = inactiveTransition;
+    target.style.transform = 'translate3d(0px, 0px, 0)';
+  }, [inactiveTransition]);
+
+  const updatePosition = useCallback(() => {
+    frameRef.current = null;
+
+    const container = containerRef.current;
+    const target = targetRef.current;
+    if (!container || !target) return;
+
+    const rect = container.getBoundingClientRect();
+
+    const mouseX = pointerRef.current.x;
+    const mouseY = pointerRef.current.y;
+    const isInside =
+      mouseX >= rect.left - padding &&
+      mouseX <= rect.right + padding &&
+      mouseY >= rect.top - padding &&
+      mouseY <= rect.bottom + padding;
+
+    if (!isInside) {
+      if (activeRef.current) resetPosition();
+      return;
+    }
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const deltaX = (mouseX - centerX) / strength;
+    const deltaY = (mouseY - centerY) / strength;
+
+    activeRef.current = true;
+    target.style.transition = activeTransition;
+    target.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+  }, [activeTransition, padding, resetPosition, strength]);
 
   const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
+    (event: MouseEvent) => {
+      if (!supportsMagnetRef.current) return;
 
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
+      pointerRef.current.x = event.clientX;
+      pointerRef.current.y = event.clientY;
 
-      const isInside =
-        mouseX >= rect.left - padding &&
-        mouseX <= rect.right + padding &&
-        mouseY >= rect.top - padding &&
-        mouseY <= rect.bottom + padding;
-
-      if (isInside) {
-        hoveredRef.current = true;
-        setIsHovered(true);
-        let deltaX = (mouseX - centerX) / strength;
-        let deltaY = (mouseY - centerY) / strength;
-
-        if (maxDistance !== undefined) {
-          const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          if (dist > maxDistance) {
-            deltaX = (deltaX / dist) * maxDistance;
-            deltaY = (deltaY / dist) * maxDistance;
-          }
-        }
-
-        setPosition({ x: deltaX, y: deltaY });
-      } else if (hoveredRef.current) {
-        hoveredRef.current = false;
-        setIsHovered(false);
-        setPosition({ x: 0, y: 0 });
+      if (frameRef.current === null) {
+        frameRef.current = window.requestAnimationFrame(updatePosition);
       }
     },
-    [padding, strength, maxDistance]
+    [updatePosition]
   );
 
   const handleMouseLeave = useCallback(() => {
-    hoveredRef.current = false;
-    setIsHovered(false);
-    setPosition({ x: 0, y: 0 });
-  }, []);
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
+    resetPosition();
+  }, [resetPosition]);
 
   useEffect(() => {
+    const hoverMedia = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleInputPreferenceChange = () => {
+      supportsMagnetRef.current = hoverMedia.matches && !reducedMotionMedia.matches;
+      if (!supportsMagnetRef.current) handleMouseLeave();
+    };
+    handleInputPreferenceChange();
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('blur', handleMouseLeave);
+    hoverMedia.addEventListener('change', handleInputPreferenceChange);
+    reducedMotionMedia.addEventListener('change', handleInputPreferenceChange);
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('blur', handleMouseLeave);
+      hoverMedia.removeEventListener('change', handleInputPreferenceChange);
+      reducedMotionMedia.removeEventListener('change', handleInputPreferenceChange);
+      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
     };
-  }, [handleMouseMove, handleMouseLeave]);
+  }, [handleMouseLeave, handleMouseMove]);
 
   return (
     <div
       ref={containerRef}
       className={className}
-      style={{
-        transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-        transition: isHovered ? activeTransition : inactiveTransition,
-        willChange: 'transform',
-        ...style,
-      }}
+      style={style}
     >
-      {children}
+      <div
+        ref={targetRef}
+        className="relative flex w-full items-center justify-center"
+        style={{
+          transform: 'translate3d(0px, 0px, 0)',
+          transition: inactiveTransition,
+          willChange: 'transform',
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 };
