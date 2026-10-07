@@ -70,7 +70,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
                 },
               },
             }}
-            className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-center select-none text-[15.2vw] sm:text-[14.8vw] md:text-[16vw] lg:text-[17vw] xl:text-[17.1vw] py-2"
+            className="hero-heading font-black uppercase tracking-normal md:tracking-tight leading-none whitespace-nowrap text-center select-none text-[15.2vw] sm:text-[14.8vw] md:text-[16vw] lg:text-[17vw] xl:text-[17.1vw] py-2"
           >
             {['HI,', "I'M", 'AADI'].map((word, i) => (
               <React.Fragment key={word}>
@@ -86,9 +86,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onContactClick }) => {
                       },
                     },
                   }}
-                  className="inline-block hero-heading"
+                  className="inline-block"
                 >
-                  {word}
+                  <span
+                    className={`inline-block hero-heading ${
+                      i === 0
+                        ? '-translate-x-[clamp(16px,5vw,22px)] md:translate-x-0'
+                        : i === 2
+                          ? 'translate-x-[clamp(16px,5vw,22px)] translate-y-[2.15em] md:translate-x-0 md:translate-y-0'
+                          : '-translate-y-[3.1em] md:translate-y-0'
+                    }`}
+                  >
+                    {word}
+                  </span>
                 </motion.span>
                 {i < 2 && ' '}
               </React.Fragment>
