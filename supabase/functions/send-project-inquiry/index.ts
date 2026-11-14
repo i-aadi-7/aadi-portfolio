@@ -1,6 +1,6 @@
 // Supabase Edge Function: send-project-inquiry
 // Securely receives project inquiries and forwards them to your inbox via Resend API.
-// Architecture: Fail-Closed CORS -> 50KB Size Guard -> Honeypot -> Validation -> Turnstile -> Atomic DB Rate Limiting -> Resend
+// Architecture: Fail-Closed CORS -> 50KB Size Guard -> Honeypot -> Timing Guard -> Turnstile -> IP Blacklist -> Content Filter -> Validation -> Atomic Rate Limiting -> Resend
 
 declare const Deno: {
   env: {
@@ -61,7 +61,7 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-// SHA-256 IP hashing for privacy-friendly persistent rate limiting
+// SHA-256 IP hashing for privacy-friendly persistent rate limiting and blacklisting
 async function hashIp(ip: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(ip);
@@ -70,24 +70,70 @@ async function hashIp(ip: string): Promise<string> {
   return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Permissive validation for either valid email or international phone / WhatsApp number
-function isValidContact(contactStr: string): boolean {
+// Explicit, adult, offensive, and abusive spam patterns
+const ABUSIVE_PATTERNS: RegExp[] = [
+  /\b(porn|porno|pornography|xxx|nsfw|hentai|onlyfans|erotic|escort|nude|nudes|boobs|penis|vagina|blowjob|incest|deepfake)\b/i,
+  /\b(fuck|fucker|fucking|bitch|bastard|asshole|motherfucker|whore|slut|cunt|dick)\b/i,
+  /\b(chutiya|bhenchod|madarchod|gaand|lund|randi|harami|bhosdike|laude)\b/i,
+  /\b(hack\s+account|carding|wallet\s+drainer|phishing\s+page|ddos\s+service)\b/i,
+];
+
+function isContentAbusive(...fields: (string | undefined | null)[]): boolean {
+  const combined = fields.filter(Boolean).join(' ');
+  return ABUSIVE_PATTERNS.some((pattern) => pattern.test(combined));
+}
+
+// Disposable & dummy email domains to reject
+const DISPOSABLE_EMAIL_DOMAINS = new Set([
+  'mailinator.com',
+  'tempmail.com',
+  '10minutemail.com',
+  'guerrillamail.com',
+  'guerrillamail.net',
+  'guerrillamail.biz',
+  'sharklasers.com',
+  'throwawaymail.com',
+  'getairmail.com',
+  'dispostable.com',
+  'yopmail.com',
+  'trashmail.com',
+  'fakeinbox.com',
+  'burnermail.io',
+  'fake.com',
+  'test.com',
+  'example.com',
+  'am.com',
+]);
+
+function isValidContact(contactStr: string): { valid: boolean; reason?: string } {
   const str = contactStr.trim();
-  // 1. Email check: standard RFC-compliant pattern
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  // 1. Email check: standard pattern + disposable domain filter
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$/;
   if (emailRegex.test(str)) {
-    return true;
+    const atIndex = str.lastIndexOf('@');
+    const domain = str.slice(atIndex + 1).toLowerCase().trim();
+
+    if (DISPOSABLE_EMAIL_DOMAINS.has(domain)) {
+      return {
+        valid: false,
+        reason: 'Please use a legitimate personal or business email address.',
+      };
+    }
+    return { valid: true };
   }
 
-  // 2. International Phone / WhatsApp check:
-  // Must allow leading +, optional parentheses, spaces, dots, hyphens, and 7 to 15 digits (E.164).
+  // 2. International Phone / WhatsApp check
   const digitsOnly = str.replace(/\D/g, '');
   const phoneCharRegex = /^[+]?[\d\s().-]{7,25}$/;
   if (digitsOnly.length >= 7 && digitsOnly.length <= 15 && phoneCharRegex.test(str)) {
-    return true;
+    return { valid: true };
   }
 
-  return false;
+  return {
+    valid: false,
+    reason: 'Please enter a valid email address or phone / WhatsApp number.',
+  };
 }
 
 Deno.serve(async (req: Request) => {
@@ -112,7 +158,7 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  // Enforce CORS on POST: reject browser requests from disallowed origins with 403
+  // Enforce CORS on POST
   if (origin && !isOriginAllowed(origin)) {
     return new Response(
       JSON.stringify({ success: false, error: 'Cross-origin request not allowed' }),
@@ -124,7 +170,6 @@ Deno.serve(async (req: Request) => {
   }
 
   // 2. Request Size Guard (50 KB Policy)
-  // Note: Content-Length header is checked first; platform streaming limit handles chunked transfers
   const MAX_BODY_BYTES = 50000;
   const contentLengthHeader = req.headers.get('content-length');
   if (contentLengthHeader) {
@@ -171,11 +216,12 @@ Deno.serve(async (req: Request) => {
     budget,
     timeline,
     _hp,
+    _ts,
     turnstileToken,
     source = 'Aadi Portfolio',
   } = body;
 
-  // 4. Honeypot check: reject bots silently with 200 without consuming rate limits or calling Resend
+  // 4. Anti-spam Honeypot: reject bots silently with 200
   if (_hp && String(_hp).trim().length > 0) {
     return new Response(
       JSON.stringify({ success: true, message: 'Inquiry received' }),
@@ -186,61 +232,37 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  // 5. Basic field and contact validation
-  const trimmedName = typeof name === 'string' ? name.trim() : '';
-  const trimmedContact = typeof contact === 'string' ? contact.trim() : '';
-  const trimmedProject = typeof project === 'string' ? project.trim() : '';
-  const trimmedBudget = typeof budget === 'string' ? budget.trim() : '';
-  const trimmedTimeline = typeof timeline === 'string' ? timeline.trim() : '';
-
-  if (trimmedName.length < 2) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Name must be at least 2 characters.',
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+  // 5. Anti-spam Timing Guard: reject rapid submissions under 3.5 seconds
+  if (typeof _ts === 'number') {
+    const elapsedMs = Date.now() - _ts;
+    if (elapsedMs < 3500) {
+      console.warn(`[send-project-inquiry] Submission flagged as too rapid (${elapsedMs}ms). Shadow-dropping.`);
+      return new Response(
+        JSON.stringify({ success: true, message: 'Inquiry received' }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
   }
 
-  if (trimmedContact.length < 5 || !isValidContact(trimmedContact)) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Please enter a valid email address or phone / WhatsApp number.',
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-  }
-
-  if (trimmedProject.length < 10) {
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Project description must be at least 10 characters.',
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-  }
-
-  // Extract client IP from proxy headers
+  // Extract client IP and edge metadata
   const clientIp =
     req.headers.get('cf-connecting-ip') ||
     req.headers.get('x-real-ip') ||
     req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
     '127.0.0.1';
 
+  const cf = (req as any).cf || {};
+  const country = cf.country || req.headers.get('cf-ipcountry') || req.headers.get('x-vercel-ip-country') || 'Unknown';
+  const city = cf.city || req.headers.get('cf-ipcity') || req.headers.get('x-vercel-ip-city') || 'Unknown';
+  const region = cf.region || req.headers.get('cf-region') || req.headers.get('x-vercel-ip-country-region') || '';
+  const postalCode = cf.postalCode || req.headers.get('cf-postal-code') || '';
+  const isp = cf.asOrganization || 'Unknown ISP';
+  const userAgent = req.headers.get('user-agent') || 'Unknown device';
+
   // 6. Server-side Cloudflare Turnstile Verification
-  // Must pass before reaching rate limiter so invalid/missing tokens do not burn user slots
   const TURNSTILE_SECRET_KEY = Deno.env.get('TURNSTILE_SECRET_KEY');
 
   if (TURNSTILE_SECRET_KEY) {
@@ -290,13 +312,100 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // 7. Persistent Atomic Rate Limiting Check + Record via Postgres Advisory Lock RPC
-  // Only reached after honeypot, validation, and Turnstile all pass
+  // 7. Check Database IP Blacklist
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const ipHash = await hashIp(clientIp);
 
   if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
-    const ipHash = await hashIp(clientIp);
+    try {
+      const blacklistUrl = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/contact_ip_blacklist?ip_hash=eq.${ipHash}&select=id`;
+      const blacklistRes = await fetch(blacklistUrl, {
+        headers: {
+          apikey: SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      });
+
+      if (blacklistRes.ok) {
+        const blacklistedRows = await blacklistRes.json();
+        if (Array.isArray(blacklistedRows) && blacklistedRows.length > 0) {
+          console.warn(`[send-project-inquiry] Dropped inquiry from blacklisted IP hash ${ipHash}`);
+          return new Response(
+            JSON.stringify({ success: true, message: 'Inquiry received' }),
+            {
+              status: 200,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+          );
+        }
+      }
+    } catch (err) {
+      console.error('[send-project-inquiry] Blacklist query error:', err);
+    }
+  }
+
+  // 8. Explicit / Abusive / Harassment Content Filter with Silent Shadow-Drop
+  const trimmedName = typeof name === 'string' ? name.trim() : '';
+  const trimmedContact = typeof contact === 'string' ? contact.trim() : '';
+  const trimmedProject = typeof project === 'string' ? project.trim() : '';
+  const trimmedBudget = typeof budget === 'string' ? budget.trim() : '';
+  const trimmedTimeline = typeof timeline === 'string' ? timeline.trim() : '';
+
+  if (isContentAbusive(trimmedName, trimmedContact, trimmedProject)) {
+    console.warn(`[send-project-inquiry] Shadow-dropped inquiry flagged for abusive/explicit content from IP ${clientIp}`);
+    return new Response(
+      JSON.stringify({ success: true, message: 'Inquiry received' }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  // 9. Field & Contact Validation
+  if (trimmedName.length < 2) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Name must be at least 2 characters.',
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  const contactValidation = isValidContact(trimmedContact);
+  if (!contactValidation.valid) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: contactValidation.reason || 'Please enter a valid email address or phone / WhatsApp number.',
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  if (trimmedProject.length < 10) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: 'Project description must be at least 10 characters.',
+      }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  // 10. Persistent Atomic Rate Limiting Check + Record
+  if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
     const rpcUrl = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/check_and_record_contact_rate_limit`;
 
     try {
@@ -332,7 +441,6 @@ Deno.serve(async (req: Request) => {
         console.warn('[send-project-inquiry] Rate limit RPC non-ok response:', await rpcRes.text());
       }
     } catch (err) {
-      // Graceful fail-open on rate limit DB connectivity error
       console.error('[send-project-inquiry] Rate limit check error:', err);
     }
   }
@@ -347,7 +455,7 @@ Deno.serve(async (req: Request) => {
 
   const timestamp = new Date().toUTCString();
 
-  // 8. Environment Secrets Verification & Dispatch via Resend
+  // 11. Environment Secrets Verification & Dispatch via Resend
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
   const CONTACT_DESTINATION_EMAIL = Deno.env.get('CONTACT_DESTINATION_EMAIL');
   const RESEND_FROM_EMAIL =
@@ -369,7 +477,10 @@ Deno.serve(async (req: Request) => {
     );
   }
 
+  const locationDisplay = [city, region, country, postalCode].filter((x) => x && x !== 'Unknown').join(', ') || 'Unknown Location';
+
   const plainText = `NEW PROJECT INQUIRY
+===================
 
 Name:
 ${safeName}
@@ -391,6 +502,14 @@ ${safeSource}
 
 Submitted:
 ${timestamp}
+
+----------------------------------------
+SECURITY & ORIGIN AUDIT
+----------------------------------------
+Sender IP:    ${clientIp}
+Location:     ${locationDisplay}
+Network/ISP:  ${isp}
+User Agent:   ${userAgent}
 `;
 
   const htmlContent = `
@@ -435,7 +554,32 @@ ${timestamp}
       </div>
     </div>
 
-    <div style="border-top: 1px solid #262626; padding-top: 16px; font-size: 11px; color: #64748b; font-family: monospace;">
+    <!-- Security & Origin Audit Card -->
+    <div style="margin-top: 24px; padding: 16px; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 12px;">
+      <div style="font-size: 10px; font-family: monospace; letter-spacing: 1.5px; text-transform: uppercase; color: #38bdf8; margin-bottom: 10px; font-weight: 700;">
+        🛡️ Security & Origin Audit
+      </div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px; color: #cbd5e1; font-family: monospace;">
+        <tr>
+          <td style="padding: 3px 0; color: #64748b; width: 100px;">IP Address:</td>
+          <td style="padding: 3px 0; color: #f8fafc; font-weight: 600;">${escapeHtml(clientIp)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 3px 0; color: #64748b;">Location:</td>
+          <td style="padding: 3px 0; color: #f8fafc;">${escapeHtml(locationDisplay)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 3px 0; color: #64748b;">Network/ISP:</td>
+          <td style="padding: 3px 0; color: #f8fafc;">${escapeHtml(isp)}</td>
+        </tr>
+        <tr>
+          <td style="padding: 3px 0; color: #64748b;">Device / OS:</td>
+          <td style="padding: 3px 0; color: #94a3b8; font-size: 11px;">${escapeHtml(userAgent)}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="border-top: 1px solid #262626; margin-top: 20px; padding-top: 16px; font-size: 11px; color: #64748b; font-family: monospace;">
       Submitted on ${escapeHtml(timestamp)}
     </div>
   </div>

@@ -301,6 +301,10 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({
                       <span className="text-purple-400 font-mono text-xs mt-0.5">—</span>
                       <span>Project description and message details</span>
                     </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="text-purple-400 font-mono text-xs mt-0.5">—</span>
+                      <span>Technical origin telemetry (including IP address, approximate regional location, and device headers) processed for spam prevention, abuse mitigation, and security auditing</span>
+                    </li>
                   </ul>
                   <p className="mt-2.5">
                     This information is used solely to evaluate your inquiry, respond to your message, and communicate regarding requested work.

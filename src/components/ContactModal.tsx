@@ -394,6 +394,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const modalOpenedAtRef = useRef<number>(Date.now());
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const openerRef = useRef<HTMLElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -456,6 +457,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
+    modalOpenedAtRef.current = Date.now();
     openerRef.current = document.activeElement as HTMLElement | null;
 
     const originalOverflow = document.body.style.overflow;
@@ -569,6 +571,19 @@ export const ContactModal: React.FC<ContactModalProps> = ({
       return;
     }
 
+    const DISPOSABLE_DOMAINS = ['mailinator.com', 'tempmail.com', '10minutemail.com', 'guerrillamail.com', 'sharklasers.com', 'throwawaymail.com', 'fake.com', 'test.com', 'example.com', 'am.com'];
+    if (trimmedContact.includes('@')) {
+      const emailDomain = trimmedContact.split('@').pop()?.toLowerCase().trim() || '';
+      if (DISPOSABLE_DOMAINS.includes(emailDomain)) {
+        setValidationError('Please enter a legitimate personal or business email address.');
+        setInvalidField('contact');
+        requestAnimationFrame(() => {
+          contactInputRef.current?.focus();
+        });
+        return;
+      }
+    }
+
     if (trimmedProject.length < 10) {
       setValidationError('Please provide a brief project description (at least 10 characters).');
       setInvalidField('project');
@@ -613,6 +628,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
           budget: budget ? budget.trim() : '',
           timeline: timeline ? timeline.trim() : '',
           _hp: honeypot,
+          _ts: modalOpenedAtRef.current,
           turnstileToken,
           source: context === 'project' ? 'Aadi Portfolio (Project CTA)' : 'Aadi Portfolio (Direct)',
         }),

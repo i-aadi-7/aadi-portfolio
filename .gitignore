@@ -19,6 +19,8 @@ coverage/
 .gemini/
 .gsd/
 .kilo/
+brag-output/
+supabase/.temp/
 adapters/
 scripts/
 GSD-STYLE.md
