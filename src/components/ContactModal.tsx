@@ -324,6 +324,20 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     }
     return '';
   });
+  const [emailHref, setEmailHref] = useState(
+    'https://mail.google.com/mail/?view=cm&fs=1&to=adityakholwal23@gmail.com&su=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio'
+  );
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        setEmailHref(
+          'mailto:adityakholwal23@gmail.com?subject=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio'
+        );
+      }
+    }
+  }, []);
   const [honeypot, setHoneypot] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
 
@@ -1492,9 +1506,16 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                         {/* Direct Email & WhatsApp Contact Options (Clean, No Personal Info Revealed) */}
                         <div className="pt-3.5 pb-1 flex items-center justify-end gap-2.5 border-t border-neutral-800/60 font-mono text-[11px]">
                           <a
-                            href="mailto:adityakholwal23@gmail.com?subject=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio"
+                            href={emailHref}
+                            target={emailHref.startsWith('http') ? '_blank' : undefined}
+                            rel={emailHref.startsWith('http') ? 'noopener noreferrer' : undefined}
+                            onClick={() => {
+                              if (navigator.clipboard?.writeText) {
+                                navigator.clipboard.writeText('adityakholwal23@gmail.com').catch(() => {});
+                              }
+                            }}
                             className="group/mail inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-800/90 border border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/75 hover:text-white transition-all duration-150 cursor-pointer text-[10.5px] uppercase tracking-wider"
-                            title="Send an Email"
+                            title="Compose Email"
                           >
                             <Mail size={13} className="text-[#D7E2EA]/60 group-hover/mail:text-white transition-colors shrink-0" />
                             <span>EMAIL</span>
