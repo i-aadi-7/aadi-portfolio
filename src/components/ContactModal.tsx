@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useMotionTemplate,
 } from 'framer-motion';
-import { X, Mail, MessageCircle } from 'lucide-react';
+import { X, Mail, MessageCircle, Check } from 'lucide-react';
 import { FlowButton } from './ui/flow-button';
 
 interface ContactModalProps {
@@ -53,6 +53,26 @@ function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
     );
   });
 }
+
+const getDecodedEmail = (): string => {
+  try {
+    return typeof window !== 'undefined' && window.atob
+      ? window.atob('YWRpdHlha2hvbHdhbDIzQGdtYWlsLmNvbQ==')
+      : 'adityakholwal23@gmail.com';
+  } catch {
+    return 'adityakholwal23@gmail.com';
+  }
+};
+
+const getDecodedPhone = (): string => {
+  try {
+    return typeof window !== 'undefined' && window.atob
+      ? window.atob('OTE5OTAwMzcwNDcw')
+      : '919900370470';
+  } catch {
+    return '919900370470';
+  }
+};
 
 // Stable Typewriter Heading Component
 const TypewriterHeading: React.FC<{
@@ -324,20 +344,39 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     }
     return '';
   });
-  const [emailHref, setEmailHref] = useState(
-    'https://mail.google.com/mail/?view=cm&fs=1&to=adityakholwal23@gmail.com&su=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio'
-  );
+  const [emailHref, setEmailHref] = useState(() => {
+    const email = getDecodedEmail();
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio`;
+  });
 
   useEffect(() => {
     if (typeof navigator !== 'undefined') {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       if (isMobile) {
+        const email = getDecodedEmail();
         setEmailHref(
-          'mailto:adityakholwal23@gmail.com?subject=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio'
+          `mailto:${email}?subject=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio`
         );
       }
     }
   }, []);
+  const [emailClicked, setEmailClicked] = useState(false);
+  const [waClicked, setWaClicked] = useState(false);
+
+  const handleEmailClick = useCallback(() => {
+    const email = getDecodedEmail();
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(email).catch(() => {});
+    }
+    setEmailClicked(true);
+    setTimeout(() => setEmailClicked(false), 2400);
+  }, []);
+
+  const handleWaClick = useCallback(() => {
+    setWaClicked(true);
+    setTimeout(() => setWaClicked(false), 2400);
+  }, []);
+
   const [honeypot, setHoneypot] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
 
@@ -1509,27 +1548,52 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                             href={emailHref}
                             target={emailHref.startsWith('http') ? '_blank' : undefined}
                             rel={emailHref.startsWith('http') ? 'noopener noreferrer' : undefined}
-                            onClick={() => {
-                              if (navigator.clipboard?.writeText) {
-                                navigator.clipboard.writeText('adityakholwal23@gmail.com').catch(() => {});
-                              }
-                            }}
-                            className="group/mail inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-800/90 border border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/75 hover:text-white transition-all duration-150 cursor-pointer text-[10.5px] uppercase tracking-wider"
-                            title="Compose Email"
+                            onClick={handleEmailClick}
+                            className={`group/mail inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-[10.5px] uppercase tracking-wider ${
+                              emailClicked
+                                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                                : 'bg-neutral-900/90 hover:bg-neutral-800/90 border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/75 hover:text-white'
+                            }`}
+                            title={emailClicked ? 'Email address copied!' : 'Open Email Composer (auto-copies address)'}
+                            aria-label="Direct Email Outreach"
                           >
-                            <Mail size={13} className="text-[#D7E2EA]/60 group-hover/mail:text-white transition-colors shrink-0" />
-                            <span>EMAIL</span>
+                            {emailClicked ? (
+                              <>
+                                <Check size={13} className="text-emerald-400 shrink-0" />
+                                <span className="text-emerald-300 font-semibold">COPIED & OPENING...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Mail size={13} className="text-[#D7E2EA]/60 group-hover/mail:text-white transition-colors shrink-0" />
+                                <span>EMAIL</span>
+                              </>
+                            )}
                           </a>
 
                           <a
-                            href="https://wa.me/919900370470?text=Hi%20Aadi%2C%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project."
+                            href={`https://wa.me/${getDecodedPhone()}?text=${encodeURIComponent('Hi Aadi, I saw your portfolio and would like to discuss a project.')}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group/wa inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900/90 hover:bg-emerald-500/10 border border-neutral-800 hover:border-emerald-500/40 text-[#D7E2EA]/75 hover:text-emerald-400 transition-all duration-150 cursor-pointer text-[10.5px] uppercase tracking-wider"
+                            onClick={handleWaClick}
+                            className={`group/wa inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-[10.5px] uppercase tracking-wider ${
+                              waClicked
+                                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                                : 'bg-neutral-900/90 hover:bg-emerald-500/10 border-neutral-800 hover:border-emerald-500/40 text-[#D7E2EA]/75 hover:text-emerald-400'
+                            }`}
                             title="Chat on WhatsApp"
+                            aria-label="Direct WhatsApp Outreach"
                           >
-                            <MessageCircle size={13} className="text-emerald-400/90 transition-transform duration-200 group-hover/wa:scale-110 shrink-0" />
-                            <span>WHATSAPP</span>
+                            {waClicked ? (
+                              <>
+                                <Check size={13} className="text-emerald-400 shrink-0" />
+                                <span className="text-emerald-300 font-semibold">OPENING CHAT...</span>
+                              </>
+                            ) : (
+                              <>
+                                <MessageCircle size={13} className="text-emerald-400/90 transition-transform duration-200 group-hover/wa:scale-110 shrink-0" />
+                                <span>WHATSAPP</span>
+                              </>
+                            )}
                           </a>
                         </div>
 
