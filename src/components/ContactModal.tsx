@@ -294,56 +294,37 @@ const TypewriterServiceList: React.FC<{
   );
 };
 
+interface ContactDraft {
+  name?: string;
+  contact?: string;
+  projectScope?: string;
+  budget?: string;
+  timeline?: string;
+}
+
+const getStoredDraft = (): ContactDraft | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw =
+      localStorage.getItem('portfolio_contact_draft') ||
+      sessionStorage.getItem('portfolio_contact_draft');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
 export const ContactModal: React.FC<ContactModalProps> = ({
   isOpen,
   onClose,
   context = 'default',
 }) => {
-  const [name, setName] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = sessionStorage.getItem('portfolio_contact_draft');
-        if (saved) return JSON.parse(saved).name || '';
-      } catch {}
-    }
-    return '';
-  });
-  const [contact, setContact] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = sessionStorage.getItem('portfolio_contact_draft');
-        if (saved) return JSON.parse(saved).contact || '';
-      } catch {}
-    }
-    return '';
-  });
-  const [projectScope, setProjectScope] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = sessionStorage.getItem('portfolio_contact_draft');
-        if (saved) return JSON.parse(saved).projectScope || '';
-      } catch {}
-    }
-    return '';
-  });
-  const [budget, setBudget] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = sessionStorage.getItem('portfolio_contact_draft');
-        if (saved) return JSON.parse(saved).budget || '';
-      } catch {}
-    }
-    return '';
-  });
-  const [timeline, setTimeline] = useState(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = sessionStorage.getItem('portfolio_contact_draft');
-        if (saved) return JSON.parse(saved).timeline || '';
-      } catch {}
-    }
-    return '';
-  });
+  const [name, setName] = useState(() => getStoredDraft()?.name || '');
+  const [contact, setContact] = useState(() => getStoredDraft()?.contact || '');
+  const [projectScope, setProjectScope] = useState(() => getStoredDraft()?.projectScope || '');
+  const [budget, setBudget] = useState(() => getStoredDraft()?.budget || '');
+  const [timeline, setTimeline] = useState(() => getStoredDraft()?.timeline || '');
   const [emailHref, setEmailHref] = useState(() => {
     const email = getDecodedEmail();
     return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio`;
@@ -527,23 +508,48 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     sheenY.set(-1000);
   }, [sheenX, sheenY]);
 
-  // Auto-save draft inputs to sessionStorage
+  const hasDraft = Boolean(
+    name.trim() ||
+    contact.trim() ||
+    projectScope.trim() ||
+    budget ||
+    timeline
+  );
+
+  // Sync draft from storage whenever modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    const saved = getStoredDraft();
+    if (saved) {
+      if (saved.name) setName((prev) => prev || saved.name || '');
+      if (saved.contact) setContact((prev) => prev || saved.contact || '');
+      if (saved.projectScope) setProjectScope((prev) => prev || saved.projectScope || '');
+      if (saved.budget) setBudget((prev) => prev || saved.budget || '');
+      if (saved.timeline) setTimeline((prev) => prev || saved.timeline || '');
+    }
+  }, [isOpen]);
+
+  // Auto-save draft inputs to localStorage and sessionStorage
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
       if (status === 'success') {
+        localStorage.removeItem('portfolio_contact_draft');
         sessionStorage.removeItem('portfolio_contact_draft');
-      } else if (name || contact || projectScope || budget || timeline) {
-        sessionStorage.setItem(
-          'portfolio_contact_draft',
-          JSON.stringify({ name, contact, projectScope, budget, timeline })
-        );
+      } else if (hasDraft) {
+        const payload = JSON.stringify({ name, contact, projectScope, budget, timeline });
+        localStorage.setItem('portfolio_contact_draft', payload);
+        sessionStorage.setItem('portfolio_contact_draft', payload);
+      } else {
+        localStorage.removeItem('portfolio_contact_draft');
+        sessionStorage.removeItem('portfolio_contact_draft');
       }
     } catch {}
-  }, [name, contact, projectScope, budget, timeline, status]);
+  }, [name, contact, projectScope, budget, timeline, status, hasDraft]);
 
   const resetForm = useCallback(() => {
     try {
+      localStorage.removeItem('portfolio_contact_draft');
       sessionStorage.removeItem('portfolio_contact_draft');
     } catch {}
     setName('');
@@ -560,9 +566,17 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   }, [resetTurnstile]);
 
   const handleClose = useCallback(() => {
-    resetForm();
+    // Only completely reset the form if submission has already succeeded.
+    // If the user is simply closing or dismissing the modal, keep their drafted work intact!
+    if (status === 'success') {
+      resetForm();
+    } else {
+      setValidationError('');
+      setInvalidField(null);
+      setFocusedField(null);
+    }
     onClose();
-  }, [resetForm, onClose]);
+  }, [status, resetForm, onClose]);
 
   // Lock background scroll, manage focus, and trap Tab
   useEffect(() => {
@@ -1543,58 +1557,79 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                         )}
 
                         {/* Direct Email & WhatsApp Contact Options (Clean, No Personal Info Revealed) */}
-                        <div className="pt-3.5 pb-1 flex items-center justify-end gap-2.5 border-t border-neutral-800/60 font-mono text-[11px]">
-                          <a
-                            href={emailHref}
-                            target={emailHref.startsWith('http') ? '_blank' : undefined}
-                            rel={emailHref.startsWith('http') ? 'noopener noreferrer' : undefined}
-                            onClick={handleEmailClick}
-                            className={`group/mail inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-[10.5px] uppercase tracking-wider ${
-                              emailClicked
-                                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
-                                : 'bg-neutral-900/90 hover:bg-neutral-800/90 border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/75 hover:text-white'
-                            }`}
-                            title={emailClicked ? 'Email address copied!' : 'Open Email Composer (auto-copies address)'}
-                            aria-label="Direct Email Outreach"
-                          >
-                            {emailClicked ? (
-                              <>
-                                <Check size={13} className="text-emerald-400 shrink-0" />
-                                <span className="text-emerald-300 font-semibold">COPIED & OPENING...</span>
-                              </>
-                            ) : (
-                              <>
-                                <Mail size={13} className="text-[#D7E2EA]/60 group-hover/mail:text-white transition-colors shrink-0" />
-                                <span>EMAIL</span>
-                              </>
-                            )}
-                          </a>
+                        <div className="pt-3.5 pb-1 flex flex-wrap items-center justify-between gap-2.5 border-t border-neutral-800/60 font-mono text-[11px]">
+                          {hasDraft ? (
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1.5 text-[10px] text-emerald-400 font-mono tracking-wider">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                DRAFT SAVED
+                              </span>
+                              <button
+                                type="button"
+                                onClick={resetForm}
+                                className="text-[10px] font-mono text-[#D7E2EA]/40 hover:text-red-400 transition-colors uppercase tracking-wider cursor-pointer underline underline-offset-2"
+                                title="Clear all draft fields"
+                              >
+                                CLEAR
+                              </button>
+                            </div>
+                          ) : (
+                            <div />
+                          )}
 
-                          <a
-                            href={`https://wa.me/${getDecodedPhone()}?text=${encodeURIComponent('Hi Aadi, I saw your portfolio and would like to discuss a project.')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={handleWaClick}
-                            className={`group/wa inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-[10.5px] uppercase tracking-wider ${
-                              waClicked
-                                ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
-                                : 'bg-neutral-900/90 hover:bg-emerald-500/10 border-neutral-800 hover:border-emerald-500/40 text-[#D7E2EA]/75 hover:text-emerald-400'
-                            }`}
-                            title="Chat on WhatsApp"
-                            aria-label="Direct WhatsApp Outreach"
-                          >
-                            {waClicked ? (
-                              <>
-                                <Check size={13} className="text-emerald-400 shrink-0" />
-                                <span className="text-emerald-300 font-semibold">OPENING CHAT...</span>
-                              </>
-                            ) : (
-                              <>
-                                <MessageCircle size={13} className="text-emerald-400/90 transition-transform duration-200 group-hover/wa:scale-110 shrink-0" />
-                                <span>WHATSAPP</span>
-                              </>
-                            )}
-                          </a>
+                          <div className="flex items-center gap-2.5">
+                            <a
+                              href={emailHref}
+                              target={emailHref.startsWith('http') ? '_blank' : undefined}
+                              rel={emailHref.startsWith('http') ? 'noopener noreferrer' : undefined}
+                              onClick={handleEmailClick}
+                              className={`group/mail inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-[10.5px] uppercase tracking-wider ${
+                                emailClicked
+                                  ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                                  : 'bg-neutral-900/90 hover:bg-neutral-800/90 border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/75 hover:text-white'
+                              }`}
+                              title={emailClicked ? 'Email address copied!' : 'Open Email Composer (auto-copies address)'}
+                              aria-label="Direct Email Outreach"
+                            >
+                              {emailClicked ? (
+                                <>
+                                  <Check size={13} className="text-emerald-400 shrink-0" />
+                                  <span className="text-emerald-300 font-semibold">COPIED & OPENING...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Mail size={13} className="text-[#D7E2EA]/60 group-hover/mail:text-white transition-colors shrink-0" />
+                                  <span>EMAIL</span>
+                                </>
+                              )}
+                            </a>
+
+                            <a
+                              href={`https://wa.me/${getDecodedPhone()}?text=${encodeURIComponent('Hi Aadi, I saw your portfolio and would like to discuss a project.')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={handleWaClick}
+                              className={`group/wa inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-200 cursor-pointer text-[10.5px] uppercase tracking-wider ${
+                                waClicked
+                                  ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
+                                  : 'bg-neutral-900/90 hover:bg-emerald-500/10 border-neutral-800 hover:border-emerald-500/40 text-[#D7E2EA]/75 hover:text-emerald-400'
+                              }`}
+                              title="Chat on WhatsApp"
+                              aria-label="Direct WhatsApp Outreach"
+                            >
+                              {waClicked ? (
+                                <>
+                                  <Check size={13} className="text-emerald-400 shrink-0" />
+                                  <span className="text-emerald-300 font-semibold">OPENING CHAT...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <MessageCircle size={13} className="text-emerald-400/90 transition-transform duration-200 group-hover/wa:scale-110 shrink-0" />
+                                  <span>WHATSAPP</span>
+                                </>
+                              )}
+                            </a>
+                          </div>
                         </div>
 
                         {/* Action Bar */}
