@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useMotionTemplate,
 } from 'framer-motion';
-import { X, Copy, Check, MessageSquare } from 'lucide-react';
+import { X, Mail, MessageCircle } from 'lucide-react';
 import { FlowButton } from './ui/flow-button';
 
 interface ContactModalProps {
@@ -324,7 +324,6 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     }
     return '';
   });
-  const [copiedEmail, setCopiedEmail] = useState(false);
   const [honeypot, setHoneypot] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
 
@@ -474,16 +473,6 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     sheenX.set(-1000);
     sheenY.set(-1000);
   }, [sheenX, sheenY]);
-
-  const handleCopyEmail = useCallback(() => {
-    const emailToCopy = 'adityakholwal23@gmail.com';
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(emailToCopy).then(() => {
-        setCopiedEmail(true);
-        setTimeout(() => setCopiedEmail(false), 2200);
-      }).catch(() => {});
-    }
-  }, []);
 
   // Auto-save draft inputs to sessionStorage
   useEffect(() => {
@@ -1500,36 +1489,26 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                           </div>
                         )}
 
-                        {/* Direct Email & WhatsApp Contact Options */}
-                        <div className="pt-3 pb-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 border-t border-neutral-800/60 font-mono text-[11px]">
-                          <button
-                            type="button"
-                            onClick={handleCopyEmail}
-                            className="inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg bg-neutral-900/90 border border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/85 hover:text-white transition-colors cursor-pointer text-[11px] group/email"
-                            title="Click to copy email address"
+                        {/* Direct Email & WhatsApp Contact Options (Clean, No Personal Info Revealed) */}
+                        <div className="pt-3.5 pb-1 flex items-center justify-end gap-2.5 border-t border-neutral-800/60 font-mono text-[11px]">
+                          <a
+                            href="mailto:adityakholwal23@gmail.com?subject=Project%20Inquiry%20%E2%80%94%20Aadi%20Portfolio"
+                            className="group/mail inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900/90 hover:bg-neutral-800/90 border border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/75 hover:text-white transition-all duration-150 cursor-pointer text-[10.5px] uppercase tracking-wider"
+                            title="Send an Email"
                           >
-                            {copiedEmail ? (
-                              <>
-                                <Check size={12} className="text-emerald-400 shrink-0" />
-                                <span className="text-emerald-400 font-semibold uppercase tracking-wider">COPIED TO CLIPBOARD</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy size={12} className="text-[#D7E2EA]/50 group-hover/email:text-white shrink-0 transition-colors" />
-                                <span className="lowercase font-sans text-xs">adityakholwal23@gmail.com</span>
-                              </>
-                            )}
-                          </button>
+                            <Mail size={13} className="text-[#D7E2EA]/60 group-hover/mail:text-white transition-colors shrink-0" />
+                            <span>EMAIL</span>
+                          </a>
 
                           <a
                             href="https://wa.me/919900370470?text=Hi%20Aadi%2C%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project."
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-lg bg-neutral-900/90 border border-neutral-800 hover:border-emerald-500/40 text-[#D7E2EA]/85 hover:text-emerald-400 transition-colors cursor-pointer text-[11px] group/wa"
+                            className="group/wa inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-neutral-900/90 hover:bg-emerald-500/10 border border-neutral-800 hover:border-emerald-500/40 text-[#D7E2EA]/75 hover:text-emerald-400 transition-all duration-150 cursor-pointer text-[10.5px] uppercase tracking-wider"
                             title="Chat on WhatsApp"
                           >
-                            <MessageSquare size={12} className="text-emerald-400 shrink-0 transition-transform duration-200 group-hover/wa:scale-110" />
-                            <span className="uppercase tracking-wider font-semibold">+91 9900370470</span>
+                            <MessageCircle size={13} className="text-emerald-400/90 transition-transform duration-200 group-hover/wa:scale-110 shrink-0" />
+                            <span>WHATSAPP</span>
                           </a>
                         </div>
 
