@@ -37,10 +37,52 @@
     <meta name="twitter:description" content="Interactive web designer and developer creating modern, high-performance digital experiences." />
     <meta name="twitter:image" content="https://aadi-portfolio-tau.vercel.app/og-image-social.jpg" />
 
-    <!-- Google Fonts Preconnect -->
+    <!-- Google Fonts Preconnect & Optimized Font Subset -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+    <!-- Structured Data (JSON-LD) for Search Engines -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://aadi-portfolio-tau.vercel.app/#person",
+            "name": "Aadi",
+            "jobTitle": "Web Designer & Developer",
+            "description": "Interactive web designer and developer creating modern, high-performance digital experiences.",
+            "url": "https://aadi-portfolio-tau.vercel.app/",
+            "image": "https://aadi-portfolio-tau.vercel.app/og-image-social.jpg",
+            "sameAs": [
+              "https://github.com/i-aadi-7",
+              "https://www.linkedin.com/in/aadi7/",
+              "https://www.instagram.com/i.aadi.7/"
+            ],
+            "knowsAbout": [
+              "Web Design",
+              "Frontend Architecture",
+              "Creative Web Development",
+              "React",
+              "Tailwind CSS",
+              "Framer Motion",
+              "Interactive 3D"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://aadi-portfolio-tau.vercel.app/#website",
+            "url": "https://aadi-portfolio-tau.vercel.app/",
+            "name": "Aadi — Web Designer & Developer Portfolio",
+            "description": "Interactive web designer and developer creating modern, high-performance digital experiences.",
+            "publisher": {
+              "@id": "https://aadi-portfolio-tau.vercel.app/#person"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body class="bg-[#0C0C0C] text-[#D7E2EA] antialiased">
     <div id="root"></div>

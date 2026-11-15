@@ -3,10 +3,14 @@ import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } fro
 import { FadeIn } from './FadeIn';
 import { AnimatedText } from './AnimatedText';
 import { ContactButton } from './ContactButton';
-import browserFrameImg from '../assets/images/browser_frame_3d_1791225077236.png';
-import codeCubeImg from '../assets/images/code_cube_3d_1791225090361.png';
-import uiPanelsStackImg from '../assets/images/ui_panels_stack_3d_1791225526651.png';
-import chromeCursorImg from '../assets/images/chrome_cursor_3d_1791225112999.png';
+import browserFramePng from '../assets/images/browser_frame_3d_1791225077236.png';
+import browserFrameWebp from '../assets/images/browser_frame_3d_1791225077236.webp';
+import codeCubePng from '../assets/images/code_cube_3d_1791225090361.png';
+import codeCubeWebp from '../assets/images/code_cube_3d_1791225090361.webp';
+import uiPanelsStackPng from '../assets/images/ui_panels_stack_3d_1791225526651.png';
+import uiPanelsStackWebp from '../assets/images/ui_panels_stack_3d_1791225526651.webp';
+import chromeCursorPng from '../assets/images/chrome_cursor_3d_1791225112999.png';
+import chromeCursorWebp from '../assets/images/chrome_cursor_3d_1791225112999.webp';
 
 interface AboutSectionProps {
   onContactClick?: () => void;
@@ -92,13 +96,16 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         className="absolute top-[8%] left-[1%] sm:left-[2%] md:left-[4%] pointer-events-none z-0"
       >
         <FadeIn delay={0.1} x={-60} y={0} duration={0.85}>
-          <img
-            src={browserFrameImg}
-            alt=""
-            aria-hidden="true"
-            className="w-[135px] sm:w-[180px] md:w-[235px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
-            loading="lazy"
-          />
+          <picture>
+            <source srcSet={browserFrameWebp} type="image/webp" />
+            <img
+              src={browserFramePng}
+              alt=""
+              aria-hidden="true"
+              className="w-[135px] sm:w-[180px] md:w-[235px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
+              loading="lazy"
+            />
+          </picture>
         </FadeIn>
       </motion.div>
 
@@ -108,13 +115,16 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         className="absolute bottom-[8%] left-[3%] sm:left-[6%] md:left-[10%] pointer-events-none z-0"
       >
         <FadeIn delay={0.25} x={-60} y={0} duration={0.85}>
-          <img
-            src={uiPanelsStackImg}
-            alt=""
-            aria-hidden="true"
-            className="w-[105px] sm:w-[145px] md:w-[185px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
-            loading="lazy"
-          />
+          <picture>
+            <source srcSet={uiPanelsStackWebp} type="image/webp" />
+            <img
+              src={uiPanelsStackPng}
+              alt=""
+              aria-hidden="true"
+              className="w-[105px] sm:w-[145px] md:w-[185px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
+              loading="lazy"
+            />
+          </picture>
         </FadeIn>
       </motion.div>
 
@@ -124,13 +134,16 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         className="absolute top-[8%] right-[1%] sm:right-[2%] md:right-[4%] pointer-events-none z-0"
       >
         <FadeIn delay={0.15} x={60} y={0} duration={0.85}>
-          <img
-            src={codeCubeImg}
-            alt=""
-            aria-hidden="true"
-            className="w-[120px] sm:w-[160px] md:w-[210px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
-            loading="lazy"
-          />
+          <picture>
+            <source srcSet={codeCubeWebp} type="image/webp" />
+            <img
+              src={codeCubePng}
+              alt=""
+              aria-hidden="true"
+              className="w-[120px] sm:w-[160px] md:w-[210px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
+              loading="lazy"
+            />
+          </picture>
         </FadeIn>
       </motion.div>
 
@@ -140,13 +153,16 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ onContactClick }) =>
         className="absolute bottom-[8%] right-[3%] sm:right-[6%] md:right-[10%] pointer-events-none z-0"
       >
         <FadeIn delay={0.3} x={60} y={0} duration={0.85}>
-          <img
-            src={chromeCursorImg}
-            alt=""
-            aria-hidden="true"
-            className="w-[120px] sm:w-[160px] md:w-[200px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
-            loading="lazy"
-          />
+          <picture>
+            <source srcSet={chromeCursorWebp} type="image/webp" />
+            <img
+              src={chromeCursorPng}
+              alt=""
+              aria-hidden="true"
+              className="w-[120px] sm:w-[160px] md:w-[200px] h-auto object-contain select-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)]"
+              loading="lazy"
+            />
+          </picture>
         </FadeIn>
       </motion.div>
 

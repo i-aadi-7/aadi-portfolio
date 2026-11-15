@@ -1,12 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { HeroSection } from './components/HeroSection';
 import { MarqueeSection } from './components/MarqueeSection';
 import { AboutSection } from './components/AboutSection';
 import { ServicesSection } from './components/ServicesSection';
 import { ProjectsSection } from './components/ProjectsSection';
-import { ContactModal } from './components/ContactModal';
-import { ProjectModal } from './components/ProjectModal';
-import { PrivacyModal } from './components/PrivacyModal';
 import { ProjectData } from './components/ProjectCard';
 import { CustomCursor } from './components/CustomCursor';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
@@ -18,6 +15,17 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { FooterParticles } from './components/FooterParticles';
 import { NotFoundPage } from './components/NotFoundPage';
 import { Analytics } from '@vercel/analytics/react';
+
+// Code-split heavy interactive modals to slash initial bundle weight
+const ContactModal = lazy(() =>
+  import('./components/ContactModal').then((m) => ({ default: m.ContactModal }))
+);
+const ProjectModal = lazy(() =>
+  import('./components/ProjectModal').then((m) => ({ default: m.ProjectModal }))
+);
+const PrivacyModal = lazy(() =>
+  import('./components/PrivacyModal').then((m) => ({ default: m.PrivacyModal }))
+);
 
 const socialLinks = {
   github: 'https://github.com/i-aadi-7',
@@ -395,24 +403,26 @@ function PortfolioContent() {
         </motion.div>
       </footer>
 
-      {/* Interactive Modals */}
-      <ContactModal
-        isOpen={isContactOpen}
-        onClose={() => setIsContactOpen(false)}
-        context={contactContext}
-      />
+      {/* Interactive Modals (Code-Split with Zero Layout Shift) */}
+      <Suspense fallback={null}>
+        <ContactModal
+          isOpen={isContactOpen}
+          onClose={() => setIsContactOpen(false)}
+          context={contactContext}
+        />
 
-      <ProjectModal
-        project={selectedProject}
-        onClose={() => setSelectedProject(null)}
-        onContactClick={() => handleOpenContact('project')}
-      />
+        <ProjectModal
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+          onContactClick={() => handleOpenContact('project')}
+        />
 
-      <PrivacyModal
-        isOpen={isPrivacyOpen}
-        onClose={() => setIsPrivacyOpen(false)}
-        onContactClick={() => handleOpenContact('default')}
-      />
+        <PrivacyModal
+          isOpen={isPrivacyOpen}
+          onClose={() => setIsPrivacyOpen(false)}
+          onContactClick={() => handleOpenContact('default')}
+        />
+      </Suspense>
     </div>
   );
 }

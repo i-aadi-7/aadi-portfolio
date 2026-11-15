@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useMotionTemplate,
 } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Copy, Check, MessageSquare } from 'lucide-react';
 import { FlowButton } from './ui/flow-button';
 
 interface ContactModalProps {
@@ -279,11 +279,52 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   onClose,
   context = 'default',
 }) => {
-  const [name, setName] = useState('');
-  const [contact, setContact] = useState('');
-  const [projectScope, setProjectScope] = useState('');
-  const [budget, setBudget] = useState('');
-  const [timeline, setTimeline] = useState('');
+  const [name, setName] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('portfolio_contact_draft');
+        if (saved) return JSON.parse(saved).name || '';
+      } catch {}
+    }
+    return '';
+  });
+  const [contact, setContact] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('portfolio_contact_draft');
+        if (saved) return JSON.parse(saved).contact || '';
+      } catch {}
+    }
+    return '';
+  });
+  const [projectScope, setProjectScope] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('portfolio_contact_draft');
+        if (saved) return JSON.parse(saved).projectScope || '';
+      } catch {}
+    }
+    return '';
+  });
+  const [budget, setBudget] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('portfolio_contact_draft');
+        if (saved) return JSON.parse(saved).budget || '';
+      } catch {}
+    }
+    return '';
+  });
+  const [timeline, setTimeline] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = sessionStorage.getItem('portfolio_contact_draft');
+        if (saved) return JSON.parse(saved).timeline || '';
+      } catch {}
+    }
+    return '';
+  });
+  const [copiedEmail, setCopiedEmail] = useState(false);
   const [honeypot, setHoneypot] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
 
@@ -434,7 +475,35 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     sheenY.set(-1000);
   }, [sheenX, sheenY]);
 
+  const handleCopyEmail = useCallback(() => {
+    const emailToCopy = 'aadi.design.work@gmail.com';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(emailToCopy).then(() => {
+        setCopiedEmail(true);
+        setTimeout(() => setCopiedEmail(false), 2200);
+      }).catch(() => {});
+    }
+  }, []);
+
+  // Auto-save draft inputs to sessionStorage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (status === 'success') {
+        sessionStorage.removeItem('portfolio_contact_draft');
+      } else if (name || contact || projectScope || budget || timeline) {
+        sessionStorage.setItem(
+          'portfolio_contact_draft',
+          JSON.stringify({ name, contact, projectScope, budget, timeline })
+        );
+      }
+    } catch {}
+  }, [name, contact, projectScope, budget, timeline, status]);
+
   const resetForm = useCallback(() => {
+    try {
+      sessionStorage.removeItem('portfolio_contact_draft');
+    } catch {}
     setName('');
     setContact('');
     setProjectScope('');
@@ -1430,6 +1499,41 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                             <div ref={turnstileContainerRef} className="w-full max-w-full" />
                           </div>
                         )}
+
+                        {/* Direct Outreach Fallback */}
+                        <div className="pt-3 pb-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-neutral-800/60 font-mono text-[11px] text-[#D7E2EA]/50">
+                          <span className="tracking-wide uppercase text-[#D7E2EA]/40">
+                            Prefer quick direct outreach?
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={handleCopyEmail}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-neutral-700 text-[#D7E2EA]/80 hover:text-white transition-colors cursor-pointer text-[10.5px] uppercase tracking-wider"
+                            >
+                              {copiedEmail ? (
+                                <>
+                                  <Check size={12} className="text-emerald-400" />
+                                  <span className="text-emerald-400 font-semibold">COPIED</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy size={12} />
+                                  <span>COPY EMAIL</span>
+                                </>
+                              )}
+                            </button>
+                            <a
+                              href="https://wa.me/?text=Hi%20Aadi%2C%20I%20saw%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project."
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-900 border border-neutral-800 hover:border-emerald-500/40 text-[#D7E2EA]/80 hover:text-emerald-400 transition-colors cursor-pointer text-[10.5px] uppercase tracking-wider"
+                            >
+                              <MessageSquare size={12} />
+                              <span>WHATSAPP</span>
+                            </a>
+                          </div>
+                        </div>
 
                         {/* Action Bar */}
                         <div className="pt-4 border-t border-neutral-800/80 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3">
